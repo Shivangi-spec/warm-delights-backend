@@ -1,5 +1,3 @@
-// Warm Delights Backend - Railway Compatible Version
-
 const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
@@ -18,19 +16,23 @@ try {
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// Enhanced CORS and middleware
+// Simple CORS and middleware
 app.use(cors({
   origin: '*',
-  methods: ['GET', 'POST', 'DELETE', 'PUT', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
+  credentials: true,
+  methods: ['GET', 'POST', 'DELETE', 'PUT', 'OPTIONS']
 }));
 app.use(bodyParser.json({ limit: '10mb' }));
 app.use(bodyParser.urlencoded({ extended: true, limit: '10mb' }));
 
 // Create uploads directory
 const uploadDir = path.join(__dirname, 'uploads');
-if (!fs.existsSync(uploadDir)) {
-  fs.mkdirSync(uploadDir, { recursive: true });
+try {
+  if (!fs.existsSync(uploadDir)) {
+    fs.mkdirSync(uploadDir, { recursive: true });
+  }
+} catch (error) {
+  console.log('Could not create uploads directory:', error);
 }
 app.use('/uploads', express.static(uploadDir));
 
@@ -40,7 +42,7 @@ const storage = multer.diskStorage({
     cb(null, uploadDir);
   },
   filename: function (req, file, cb) {
-    const uniqueName = `${Date.now()}-${file.originalname.replace(/\s+/g, '_')}`;
+    const uniqueName = Date.now() + '-' + file.originalname.replace(/\s+/g, '_');
     cb(null, uniqueName);
   }
 });
@@ -78,7 +80,7 @@ try {
   console.log('Email setup failed, continuing without email functionality');
 }
 
-// CRITICAL: Root route for Railway health checks
+// Root route for Railway health checks
 app.get('/', (req, res) => {
   res.json({ 
     status: 'OK', 
@@ -91,7 +93,7 @@ app.get('/health', (req, res) => {
   res.json({ status: 'healthy' });
 });
 
-// Menu API with images
+// Menu API with full menu from your image
 app.get('/api/menu', (req, res) => {
   try {
     const menuItems = [
@@ -100,11 +102,13 @@ app.get('/api/menu', (req, res) => {
       { id: 2, name: 'Chocolate Cake', category: 'Cakes', price: 500.00, description: 'Rich, decadent eggless chocolate cake that melts in your mouth', customizable: true, eggless: true, image: '/api/placeholder/300/200' },
       { id: 3, name: 'Strawberry Cake', category: 'Cakes', price: 550.00, description: 'Fresh strawberry eggless cake with real fruit flavoring', customizable: true, eggless: true, image: '/api/placeholder/300/200' },
       { id: 4, name: 'Butterscotch Cake', category: 'Cakes', price: 550.00, description: 'Butterscotch delight with caramel flavoring, light and sweet', customizable: true, eggless: true, image: '/api/placeholder/300/200' },
+      
       // Cookies
       { id: 5, name: 'Peanut Butter Cookies', category: 'Cookies', price: 50, description: 'Crunchy eggless peanut butter cookies with rich nutty flavor', customizable: false, priceUnit: 'pc', eggless: true, image: '/api/placeholder/300/200' },
       { id: 6, name: 'Chocolate Cookies', category: 'Cookies', price: 40, description: 'Soft eggless chocolate cookies loaded with chocolate chips', customizable: false, priceUnit: 'pc', eggless: true, image: '/api/placeholder/300/200' },
       { id: 7, name: 'Almond Cookies', category: 'Cookies', price: 45, description: 'Crunchy almond cookies with real almond pieces', customizable: false, priceUnit: 'pc', eggless: true, image: '/api/placeholder/300/200' },
       { id: 8, name: 'Butter Cream Cookies', category: 'Cookies', price: 30, description: 'Smooth butter cream cookies that melt in your mouth', customizable: false, priceUnit: 'pc', eggless: true, image: '/api/placeholder/300/200' },
+      
       // Cupcakes
       { id: 9, name: 'Chocolate Cupcakes', category: 'Cupcakes', price: 40, description: 'Moist chocolate cupcakes with creamy frosting', customizable: true, priceUnit: 'pc', eggless: true, image: '/api/placeholder/300/200' },
       { id: 10, name: 'Whole Wheat Banana Muffins', category: 'Cupcakes', price: 35, description: 'Healthy whole wheat banana muffins with real banana chunks', customizable: false, priceUnit: 'pc', eggless: true, image: '/api/placeholder/300/200' },
@@ -127,7 +131,7 @@ app.post('/api/orders', upload.single('referenceImage'), async (req, res) => {
       return res.status(400).json({ success: false, message: 'Name, email, and phone are required' });
     }
     
-    const parsedItems = typeof items === 'string' ? JSON.parse(items) : items;
+    const parsedItems = typeof items === 'string' ? JSON.parse(items) : items || [];
     
     const order = {
       id: orderIdCounter++,
@@ -309,8 +313,12 @@ app.delete('/api/gallery/:id', (req, res) => {
     const filePath = path.join(uploadDir, image.filename);
     
     // Delete file from filesystem
-    if (fs.existsSync(filePath)) {
-      fs.unlinkSync(filePath);
+    try {
+      if (fs.existsSync(filePath)) {
+        fs.unlinkSync(filePath);
+      }
+    } catch (fileError) {
+      console.error('File deletion error:', fileError);
     }
     
     // Remove from array
@@ -366,7 +374,7 @@ app.use('*', (req, res) => {
   res.status(404).json({ error: 'Route not found' });
 });
 
-// CRITICAL: Start server with proper binding for Railway
+// Start server with Railway-compatible binding
 const server = app.listen(PORT, '0.0.0.0', () => {
   console.log(`✅ Warm Delights Backend running on port ${PORT}`);
 }).on('error', (error) => {
@@ -376,10 +384,12 @@ const server = app.listen(PORT, '0.0.0.0', () => {
   }
 });
 
-// Graceful shutdown
+// Graceful shutdown for Railway
 process.on('SIGTERM', () => {
   console.log('Received SIGTERM, shutting down gracefully');
   server.close(() => {
     console.log('Process terminated');
   });
 });
+
+module.exports = app;
