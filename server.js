@@ -1,4 +1,4 @@
-// Warm Delights Backend Server - Updated with Image Upload for Gallery
+// Warm Delights Backend Server - Updated with Menu and Gallery
 
 const express = require('express');
 const cors = require('cors');
@@ -17,7 +17,7 @@ app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-// Serve static 'uploads' folder for images - this makes images accessible to all users
+// Serve static 'uploads' folder for images
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Create uploads directory if it doesn't exist
@@ -32,7 +32,6 @@ const storage = multer.diskStorage({
     cb(null, 'uploads/');
   },
   filename: (req, file, cb) => {
-    // Create unique filename with timestamp
     const uniqueName = Date.now() + '-' + file.originalname.replace(/\s/g, '_');
     cb(null, uniqueName);
   }
@@ -55,7 +54,7 @@ const upload = multer({
 // In-memory storage (use database in production)
 let orders = [];
 let orderIdCounter = 1;
-let galleryImages = []; // New array to store gallery images
+let galleryImages = [];
 
 // Email configuration
 const transporter = nodemailer.createTransporter({
@@ -66,64 +65,128 @@ const transporter = nodemailer.createTransporter({
   }
 });
 
-// Existing Routes
-
-// Get all menu items
+// Updated Menu with your actual items
 app.get('/api/menu', (req, res) => {
   const menuItems = [
+    // Cakes
     {
       id: 1,
-      name: 'Custom Birthday Cake',
-      category: 'Custom Cakes',
-      price: 25,
-      description: 'Personalized birthday cakes with custom decorations',
+      name: 'Vanilla Cake',
+      category: 'Cakes',
+      price: 450.00,
+      description: 'Classic soft, moist eggless vanilla cake perfect for any celebration',
       image: '/api/placeholder/300/200',
-      customizable: true
+      customizable: true,
+      eggless: true
     },
     {
       id: 2,
-      name: 'Chocolate Chip Cookies',
-      category: 'Cookies',
-      price: 12,
-      description: 'Classic cookies with premium chocolate chips',
+      name: 'Chocolate Cake',
+      category: 'Cakes',
+      price: 500.00,
+      description: 'Rich, decadent eggless chocolate cake that melts in your mouth',
       image: '/api/placeholder/300/200',
-      customizable: false
+      customizable: true,
+      eggless: true
     },
     {
       id: 3,
-      name: 'Vanilla Cupcakes',
-      category: 'Cupcakes',
-      price: 18,
-      description: 'Fluffy vanilla cupcakes with buttercream frosting',
+      name: 'Strawberry Cake',
+      category: 'Cakes',
+      price: 550.00,
+      description: 'Fresh strawberry eggless cake with real fruit flavoring',
       image: '/api/placeholder/300/200',
-      customizable: true
+      customizable: true,
+      eggless: true
     },
     {
       id: 4,
-      name: 'Wedding Cake',
-      category: 'Custom Cakes',
-      price: 150,
-      description: 'Multi-tier wedding cakes with elegant designs',
+      name: 'Butterscotch Cake',
+      category: 'Cakes',
+      price: 550.00,
+      description: 'Butterscotch delight with caramel flavoring, light and sweet',
       image: '/api/placeholder/300/200',
-      customizable: true
+      customizable: true,
+      eggless: true
     },
+    // Cookies
     {
       id: 5,
-      name: 'Brownies',
-      category: 'Specialty Desserts',
-      price: 15,
-      description: 'Rich, fudgy brownies with optional nuts',
+      name: 'Peanut Butter Cookies',
+      category: 'Cookies',
+      price: 50,
+      description: 'Crunchy eggless peanut butter cookies with rich nutty flavor',
       image: '/api/placeholder/300/200',
-      customizable: false
+      customizable: false,
+      priceUnit: 'pc',
+      eggless: true
     },
     {
       id: 6,
-      name: 'Red Velvet Cake',
-      category: 'Custom Cakes',
-      price: 30,
-      description: 'Classic red velvet with cream cheese frosting',
+      name: 'Chocolate Cookies',
+      category: 'Cookies',
+      price: 40,
+      description: 'Soft eggless chocolate cookies loaded with chocolate chips',
       image: '/api/placeholder/300/200',
-      customizable: true
+      customizable: false,
+      priceUnit: 'pc',
+      eggless: true
+    },
+    {
+      id: 7,
+      name: 'Almond Cookies',
+      category: 'Cookies',
+      price: 45,
+      description: 'Crunchy almond cookies with real almond pieces',
+      image: '/api/placeholder/300/200',
+      customizable: false,
+      priceUnit: 'pc',
+      eggless: true
+    },
+    {
+      id: 8,
+      name: 'Butter Cream Cookies',
+      category: 'Cookies',
+      price: 30,
+      description: 'Smooth butter cream cookies that melt in your mouth',
+      image: '/api/placeholder/300/200',
+      customizable: false,
+      priceUnit: 'pc',
+      eggless: true
+    },
+    // Cupcakes
+    {
+      id: 9,
+      name: 'Chocolate Cupcakes',
+      category: 'Cupcakes',
+      price: 40,
+      description: 'Moist chocolate cupcakes with creamy frosting',
+      image: '/api/placeholder/300/200',
+      customizable: true,
+      priceUnit: 'pc',
+      eggless: true
+    },
+    {
+      id: 10,
+      name: 'Whole Wheat Banana Muffins',
+      category: 'Cupcakes',
+      price: 35,
+      description: 'Healthy whole wheat banana muffins with real banana chunks',
+      image: '/api/placeholder/300/200',
+      customizable: false,
+      priceUnit: 'pc',
+      eggless: true
+    },
+    {
+      id: 11,
+      name: 'Cheesecake Cupcakes',
+      category: 'Cupcakes',
+      price: 55,
+      description: 'Creamy cheesecake cupcakes with graham cracker base',
+      image: '/api/placeholder/300/200',
+      customizable: true,
+      priceUnit: 'pc',
+      eggless: true
     }
   ];
   
@@ -173,10 +236,10 @@ app.post('/api/orders', upload.single('referenceImage'), async (req, res) => {
         <h3>Order Details:</h3>
         <p><strong>Order ID:</strong> WD${order.id.toString().padStart(4, '0')}</p>
         <p><strong>Delivery Date:</strong> ${deliveryDate}</p>
-        <p><strong>Total Amount:</strong> $${order.totalAmount}</p>
+        <p><strong>Total Amount:</strong> ₹${order.totalAmount}</p>
         <h4>Items:</h4>
         <ul>
-          ${parsedItems.map(item => `<li>${item.quantity}x ${item.name} - $${item.price * item.quantity}</li>`).join('')}
+          ${parsedItems.map(item => `<li>${item.quantity}x ${item.name} - ₹${item.price * item.quantity}</li>`).join('')}
         </ul>
         <p>We'll contact you if we need any clarification on your order.</p>
         <p>Thank you for choosing Warm Delights!</p>
@@ -275,9 +338,7 @@ app.get('/api/placeholder/:width/:height', (req, res) => {
   res.send(svg);
 });
 
-// NEW GALLERY ROUTES - These make images visible to all users
-
-// Upload image to gallery
+// Gallery image upload route
 app.post('/api/gallery/upload', upload.single('image'), (req, res) => {
   if (!req.file) {
     return res.status(400).json({ error: 'No file uploaded' });
