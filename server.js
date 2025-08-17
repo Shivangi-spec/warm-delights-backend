@@ -31,20 +31,44 @@ app.options('*', cors());
 app.use(bodyParser.json({ limit: '10mb' }));
 app.use(bodyParser.urlencoded({ extended: true, limit: '10mb' }));
 
-// Create uploads directory with absolute path
+// **FIXED: Create uploads directory with proper error handling**
 const uploadDir = path.join(__dirname, 'uploads');
-console.log('Upload directory:', uploadDir);
+console.log('🗂️ Upload directory path:', uploadDir);
 
-try {
-    if (!fs.existsSync(uploadDir)) {
+// Function to ensure uploads directory exists
+function ensureUploadsDir() {
+    try {
+        // Check if uploads exists as a file (this causes ENOTDIR)
+        if (fs.existsSync(uploadDir)) {
+            const stats = fs.statSync(uploadDir);
+            if (stats.isFile()) {
+                console.log('❌ "uploads" exists as a FILE, removing it...');
+                fs.unlinkSync(uploadDir); // Remove the file
+            } else if (stats.isDirectory()) {
+                console.log('✅ Uploads directory already exists');
+                return;
+            }
+        }
+        
+        // Create the directory
         fs.mkdirSync(uploadDir, { recursive: true });
-        console.log('✅ Uploads directory created');
-    } else {
-        console.log('✅ Uploads directory exists');
+        console.log('✅ Uploads directory created:', uploadDir);
+        
+        // Verify it was created successfully
+        if (fs.existsSync(uploadDir) && fs.statSync(uploadDir).isDirectory()) {
+            console.log('✅ Directory verification successful');
+        } else {
+            throw new Error('Directory creation verification failed');
+        }
+        
+    } catch (error) {
+        console.error('❌ Error creating uploads directory:', error);
+        throw error;
     }
-} catch (error) {
-    console.error('❌ Could not create uploads directory:', error);
 }
+
+// **ENSURE UPLOADS DIRECTORY EXISTS BEFORE STARTING**
+ensureUploadsDir();
 
 // Serve static files
 app.use('/uploads', express.static(uploadDir));
@@ -52,39 +76,50 @@ app.use('/uploads', express.static(uploadDir));
 // **FIXED MULTER CONFIGURATION**
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
-        console.log('📁 Setting destination to:', uploadDir);
-        cb(null, uploadDir);
+        console.log('📁 Multer destination called');
+        
+        // Double-check directory exists before each upload
+        try {
+            ensureUploadsDir();
+            console.log('📁 Using destination:', uploadDir);
+            cb(null, uploadDir);
+        } catch (error) {
+            console.error('❌ Destination error:', error);
+            cb(error);
+        }
     },
     filename: function (req, file, cb) {
-        // Create unique filename with original extension
-        const uniqueName = Date.now() + '-' + Math.round(Math.random() * 1E9) + path.extname(file.originalname);
+        // Create safe filename without special characters
+        const timestamp = Date.now();
+        const random = Math.round(Math.random() * 1E9);
+        const extension = path.extname(file.originalname);
+        const safeName = file.originalname.replace(/[^a-zA-Z0-9.]/g, '_');
+        const uniqueName = `${timestamp}-${random}-${safeName}`;
+        
         console.log('📝 Generated filename:', uniqueName);
         cb(null, uniqueName);
     }
 });
 
-// **ENHANCED MULTER CONFIGURATION**
 const upload = multer({
     storage: storage,
     limits: { 
-        fileSize: 10 * 1024 * 1024, // 10MB limit (increased)
-        files: 1 // Only 1 file at a time
+        fileSize: 10 * 1024 * 1024, // 10MB limit
+        files: 1 
     },
     fileFilter: function (req, file, cb) {
-        console.log('🔍 Checking file:', {
+        console.log('🔍 File filter check:', {
             fieldname: file.fieldname,
             originalname: file.originalname,
-            mimetype: file.mimetype,
-            size: file.size
+            mimetype: file.mimetype
         });
         
-        // Check if it's an image
         if (file.mimetype.startsWith('image/')) {
-            console.log('✅ File type accepted:', file.mimetype);
+            console.log('✅ File type accepted');
             cb(null, true);
         } else {
-            console.log('❌ File type rejected:', file.mimetype);
-            cb(new Error(`Invalid file type. Only images are allowed. Got: ${file.mimetype}`), false);
+            console.log('❌ File type rejected');
+            cb(new Error(`Invalid file type: ${file.mimetype}. Only images are allowed.`), false);
         }
     }
 });
@@ -110,14 +145,15 @@ try {
     console.log('Email setup failed, continuing without email functionality');
 }
 
-// Root route for Railway health checks
+// Root route
 app.get('/', (req, res) => {
     res.json({
         status: 'OK',
         message: 'Warm Delights Backend is running!',
         timestamp: new Date().toISOString(),
-        endpoints: ['/api/menu', '/api/gallery', '/api/contact'],
-        uploadsDir: uploadDir
+        uploadDir: uploadDir,
+        uploadsExists: fs.existsSync(uploadDir),
+        uploadsIsDirectory: fs.existsSync(uploadDir) ? fs.statSync(uploadDir).isDirectory() : false
     });
 });
 
@@ -127,11 +163,10 @@ app.get('/health', (req, res) => {
 
 // Menu API
 app.get('/api/menu', (req, res) => {
-    console.log('📋 Menu API called at:', new Date().toISOString());
+    console.log('📋 Menu API called');
     
     try {
         const menuItems = [
-            // Cakes
             {
                 id: 1,
                 name: 'Vanilla Cake',
@@ -172,7 +207,6 @@ app.get('/api/menu', (req, res) => {
                 eggless: true,
                 image: '/api/placeholder/300/200'
             },
-            // Cookies
             {
                 id: 5,
                 name: 'Peanut Butter Cookies',
@@ -217,7 +251,6 @@ app.get('/api/menu', (req, res) => {
                 eggless: true,
                 image: '/api/placeholder/300/200'
             },
-            // Cupcakes
             {
                 id: 9,
                 name: 'Chocolate Cupcakes',
@@ -253,73 +286,65 @@ app.get('/api/menu', (req, res) => {
             }
         ];
 
-        console.log('✅ Returning', menuItems.length, 'menu items');
         res.json(menuItems);
     } catch (error) {
         console.error('❌ Menu error:', error);
-        res.status(500).json({ error: 'Failed to load menu', details: error.message });
+        res.status(500).json({ error: 'Failed to load menu' });
     }
 });
 
 // **FIXED GALLERY UPLOAD API**
 app.post('/api/gallery/upload', (req, res) => {
     console.log('📸 Gallery upload endpoint hit');
-    console.log('📋 Request headers:', req.headers);
     
-    // Use the upload middleware
+    // Ensure uploads directory exists before processing
+    try {
+        ensureUploadsDir();
+    } catch (error) {
+        console.error('❌ Upload directory error:', error);
+        return res.status(500).json({
+            error: 'Server configuration error',
+            message: 'Upload directory could not be created'
+        });
+    }
+    
+    // Process upload
     upload.single('image')(req, res, function(err) {
-        console.log('📤 Multer processing complete');
-        
         if (err) {
             console.error('❌ Multer error:', err);
             
             if (err instanceof multer.MulterError) {
                 if (err.code === 'LIMIT_FILE_SIZE') {
-                    return res.status(400).json({ 
-                        error: 'File too large', 
-                        message: 'File size must be less than 10MB',
-                        code: err.code 
+                    return res.status(400).json({
+                        error: 'File too large',
+                        message: 'File size must be less than 10MB'
                     });
                 }
-                if (err.code === 'LIMIT_UNEXPECTED_FILE') {
-                    return res.status(400).json({ 
-                        error: 'Unexpected field', 
-                        message: 'Expected field name is "image"',
-                        code: err.code 
-                    });
-                }
-                return res.status(400).json({ 
-                    error: 'Upload error', 
-                    message: err.message,
-                    code: err.code 
+                return res.status(400).json({
+                    error: 'Upload error',
+                    message: err.message
                 });
             }
             
-            // Custom error (like file type validation)
-            return res.status(400).json({ 
-                error: 'Upload failed', 
-                message: err.message 
+            return res.status(400).json({
+                error: 'Upload failed',
+                message: err.message
             });
         }
 
-        // Check if file was uploaded
         if (!req.file) {
-            console.log('❌ No file in request');
-            return res.status(400).json({ 
-                error: 'No file uploaded', 
-                message: 'Please select an image file to upload' 
+            return res.status(400).json({
+                error: 'No file uploaded',
+                message: 'Please select an image file'
             });
         }
 
-        console.log('✅ File uploaded successfully:', {
+        console.log('✅ File uploaded:', {
             filename: req.file.filename,
-            originalname: req.file.originalname,
-            mimetype: req.file.mimetype,
-            size: req.file.size,
-            path: req.file.path
+            path: req.file.path,
+            size: req.file.size
         });
 
-        // Create image data object
         const imageData = {
             id: Date.now(),
             filename: req.file.filename,
@@ -330,11 +355,9 @@ app.post('/api/gallery/upload', (req, res) => {
             uploadedAt: new Date()
         };
 
-        // Add to gallery array
         galleryImages.push(imageData);
-        console.log('📚 Total gallery images:', galleryImages.length);
 
-        res.status(200).json({
+        res.json({
             success: true,
             message: 'Image uploaded successfully',
             image: imageData
@@ -342,42 +365,30 @@ app.post('/api/gallery/upload', (req, res) => {
     });
 });
 
-// Gallery get all images API
+// Get gallery images
 app.get('/api/gallery', (req, res) => {
     console.log('🖼️ Gallery API called, returning', galleryImages.length, 'images');
-    
-    try {
-        res.json(galleryImages);
-    } catch (error) {
-        console.error('❌ Gallery error:', error);
-        res.status(500).json({ error: 'Failed to load gallery' });
-    }
+    res.json(galleryImages);
 });
 
-// Delete image API
+// Delete image
 app.delete('/api/gallery/:id', (req, res) => {
     try {
         const imageId = parseInt(req.params.id);
-        console.log('🗑️ Deleting image with ID:', imageId);
-        
         const imageIndex = galleryImages.findIndex(img => img.id === imageId);
 
         if (imageIndex === -1) {
-            console.log('❌ Image not found:', imageId);
             return res.status(404).json({ error: 'Image not found' });
         }
 
         const image = galleryImages[imageIndex];
         const filePath = path.join(uploadDir, image.filename);
-        console.log('🗂️ File path to delete:', filePath);
 
         // Delete file from filesystem
         try {
             if (fs.existsSync(filePath)) {
                 fs.unlinkSync(filePath);
                 console.log('✅ File deleted from filesystem');
-            } else {
-                console.log('⚠️ File not found on filesystem');
             }
         } catch (fileError) {
             console.error('❌ File deletion error:', fileError);
@@ -385,11 +396,10 @@ app.delete('/api/gallery/:id', (req, res) => {
 
         // Remove from array
         galleryImages.splice(imageIndex, 1);
-        console.log('✅ Image removed from array. Remaining:', galleryImages.length);
 
-        res.json({ 
+        res.json({
             success: true,
-            message: 'Image deleted successfully' 
+            message: 'Image deleted successfully'
         });
     } catch (error) {
         console.error('❌ Delete error:', error);
@@ -428,7 +438,7 @@ app.post('/api/orders', upload.single('referenceImage'), async (req, res) => {
 
         orders.push(order);
 
-        // Send confirmation email if transporter available
+        // Send email if available
         if (transporter) {
             try {
                 const mailOptions = {
@@ -441,7 +451,6 @@ app.post('/api/orders', upload.single('referenceImage'), async (req, res) => {
                         <p><strong>Order ID:</strong> WD${order.id.toString().padStart(4, '0')}</p>
                         <p><strong>Delivery Date:</strong> ${deliveryDate}</p>
                         <p><strong>Total Amount:</strong> ₹${order.totalAmount}</p>
-                        <p>We'll contact you if we need any clarification on your order.</p>
                         <p>Thank you for choosing Warm Delights!</p>
                     `
                 };
@@ -461,7 +470,7 @@ app.post('/api/orders', upload.single('referenceImage'), async (req, res) => {
         console.error('Order error:', error);
         res.status(500).json({
             success: false,
-            message: 'Failed to place order. Please try again.'
+            message: 'Failed to place order'
         });
     }
 });
@@ -511,7 +520,6 @@ app.post('/api/contact', async (req, res) => {
             });
         }
 
-        // Send notification email if transporter available
         if (transporter) {
             try {
                 const mailOptions = {
@@ -541,12 +549,12 @@ app.post('/api/contact', async (req, res) => {
         console.error('Contact form error:', error);
         res.status(500).json({
             success: false,
-            message: 'Failed to send message. Please try again.'
+            message: 'Failed to send message'
         });
     }
 });
 
-// Placeholder image generator for menu items
+// Placeholder image generator
 app.get('/api/placeholder/:width/:height', (req, res) => {
     try {
         const { width, height } = req.params;
@@ -569,25 +577,18 @@ app.get('/api/placeholder/:width/:height', (req, res) => {
 
 // Global error handler
 app.use((error, req, res, next) => {
-    console.error('🚨 Global error handler:', error);
+    console.error('🚨 Global error:', error);
     
     if (error instanceof multer.MulterError) {
-        if (error.code === 'LIMIT_FILE_SIZE') {
-            return res.status(400).json({ 
-                error: 'File too large (max 10MB)',
-                code: error.code 
-            });
-        }
-        return res.status(400).json({ 
+        return res.status(400).json({
             error: 'File upload error',
-            message: error.message,
-            code: error.code 
+            message: error.message
         });
     }
     
     res.status(500).json({
-        error: 'Something went wrong!',
-        message: 'Please try again later'
+        error: 'Internal server error',
+        message: 'Something went wrong'
     });
 });
 
@@ -596,20 +597,16 @@ app.use('*', (req, res) => {
     res.status(404).json({ error: 'Route not found' });
 });
 
-// Start server with Railway-compatible binding
+// Start server
 const server = app.listen(PORT, '0.0.0.0', () => {
     console.log(`✅ Warm Delights Backend running on port ${PORT}`);
-    console.log(`📡 Server URL: http://localhost:${PORT}`);
-    console.log(`🔗 API endpoints available at: /api/menu, /api/gallery, /api/contact`);
     console.log(`📁 Upload directory: ${uploadDir}`);
+    console.log(`📂 Directory exists: ${fs.existsSync(uploadDir)}`);
 }).on('error', (error) => {
     console.error('Server error:', error);
-    if (error.code === 'EADDRINUSE') {
-        console.error(`Port ${PORT} is already in use`);
-    }
 });
 
-// Graceful shutdown for Railway
+// Graceful shutdown
 process.on('SIGTERM', () => {
     console.log('Received SIGTERM, shutting down gracefully');
     server.close(() => {
