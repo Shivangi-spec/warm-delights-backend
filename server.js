@@ -44,12 +44,39 @@ app.use(cors({
 
 app.options('*', cors());
 
-// Enhanced CORS for gallery images
+// Add this RIGHT AFTER your existing CORS setup (around line 50)
+// Enhanced CORS for static file serving
 app.use('/uploads', (req, res, next) => {
     res.header('Access-Control-Allow-Origin', '*');
     res.header('Cross-Origin-Resource-Policy', 'cross-origin');
+    res.header('Access-Control-Allow-Methods', 'GET, OPTIONS');
+    res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
+    
+    if (req.method === 'OPTIONS') {
+        return res.status(200).end();
+    }
     next();
 });
+
+// Your existing uploads static serving (keep this)
+app.use('/uploads', express.static(uploadDir, {
+    maxAge: '1y',
+    etag: true,
+    lastModified: true,
+    setHeaders: (res, path) => {
+        if (path.endsWith('.jpg') || path.endsWith('.jpeg')) {
+            res.set('Content-Type', 'image/jpeg');
+        } else if (path.endsWith('.png')) {
+            res.set('Content-Type', 'image/png');
+        } else if (path.endsWith('.webp')) {
+            res.set('Content-Type', 'image/webp');
+        }
+        
+        res.set('Access-Control-Allow-Origin', '*');
+        res.set('Cross-Origin-Resource-Policy', 'cross-origin');
+    }
+}));
+
 
 
 app.use(bodyParser.json({ limit: '10mb' }));
