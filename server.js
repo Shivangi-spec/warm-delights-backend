@@ -85,13 +85,90 @@ app.use('/uploads', express.static(uploadDir, {
             res.set('Content-Type', 'image/png');
         } else if (path.endsWith('.webp')) {
             res.set('Content-Type', 'image/webp');
+        } else if (path.endsWith('.gif')) {
+            res.set('Content-Type', 'image/gif');
         }
         
-        // Enable cross-origin access for images
+        // CRITICAL: Enable cross-origin access for images
+        res.set('Access-Control-Allow-Origin', '*');
+        res.set('Cross-Origin-Resource-Policy', 'cross-origin');
+        res.set('Cross-Origin-Embedder-Policy', 'unsafe-none');
+    }
+}));
+
+// Alternative static serving routes for better accessibility
+app.use('/api/uploads', express.static(uploadDir, {
+    setHeaders: (res, path) => {
         res.set('Access-Control-Allow-Origin', '*');
         res.set('Cross-Origin-Resource-Policy', 'cross-origin');
     }
 }));
+
+app.use('/images', express.static(uploadDir, {
+    setHeaders: (res, path) => {
+        res.set('Access-Control-Allow-Origin', '*');
+        res.set('Cross-Origin-Resource-Policy', 'cross-origin');
+    }
+}));
+
+// CRITICAL: Fallback route for image serving with manual CORS
+app.get('/uploads/:filename', (req, res) => {
+    const filename = req.params.filename;
+    const filepath = path.join(uploadDir, filename);
+    
+    // Check if file exists
+    if (fs.existsSync(filepath)) {
+        // Set CORS headers manually
+        res.setHeader('Access-Control-Allow-Origin', '*');
+        res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
+        res.setHeader('Cross-Origin-Embedder-Policy', 'unsafe-none');
+        
+        // Set proper content type
+        const ext = path.extname(filename).toLowerCase();
+        const mimeTypes = {
+            '.jpg': 'image/jpeg',
+            '.jpeg': 'image/jpeg',
+            '.png': 'image/png',
+            '.gif': 'image/gif',
+            '.webp': 'image/webp'
+        };
+        
+        if (mimeTypes[ext]) {
+            res.setHeader('Content-Type', mimeTypes[ext]);
+        }
+        
+        res.sendFile(filepath);
+    } else {
+        res.status(404).json({ error: 'Image not found' });
+    }
+});
+
+// Additional fallback routes
+app.get('/api/uploads/:filename', (req, res) => {
+    const filename = req.params.filename;
+    const filepath = path.join(uploadDir, filename);
+    
+    if (fs.existsSync(filepath)) {
+        res.setHeader('Access-Control-Allow-Origin', '*');
+        res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
+        res.sendFile(filepath);
+    } else {
+        res.status(404).json({ error: 'Image not found' });
+    }
+});
+
+app.get('/images/:filename', (req, res) => {
+    const filename = req.params.filename;
+    const filepath = path.join(uploadDir, filename);
+    
+    if (fs.existsSync(filepath)) {
+        res.setHeader('Access-Control-Allow-Origin', '*');
+        res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
+        res.sendFile(filepath);
+    } else {
+        res.status(404).json({ error: 'Image not found' });
+    }
+});
 
 // Enhanced Multer configuration with better file handling
 const storage = multer.diskStorage({
@@ -415,10 +492,11 @@ app.get('/', (req, res) => {
         message: 'Warm Delights Backend is running!',
         timestamp: new Date().toISOString(),
         version: '2.0.0',
-        features: ['Analytics', 'Admin Auth', 'Responsive Images', 'Contact Forms'],
+        features: ['Analytics', 'Admin Auth', 'Responsive Images', 'Contact Forms', 'Universal Image Access'],
         uploadDir: uploadDir,
         uploadsExists: fs.existsSync(uploadDir),
-        uploadsIsDirectory: fs.existsSync(uploadDir) ? fs.statSync(uploadDir).isDirectory() : false
+        uploadsIsDirectory: fs.existsSync(uploadDir) ? fs.statSync(uploadDir).isDirectory() : false,
+        imageCount: galleryImages.length
     });
 });
 
@@ -1052,6 +1130,7 @@ app.get('/api/placeholder/:width/:height', (req, res) => {
         
         res.setHeader('Content-Type', 'image/svg+xml');
         res.setHeader('Cache-Control', 'public, max-age=3600');
+        res.setHeader('Access-Control-Allow-Origin', '*');
         res.send(svg);
     } catch (error) {
         console.error('Placeholder error:', error);
@@ -1107,13 +1186,14 @@ setInterval(() => {
 
 // Start server
 const server = app.listen(PORT, '0.0.0.0', () => {
-    console.log(`✅ Warm Delights Backend v2.0.0 running on port ${PORT}`);
+    console.log(`✅ Warm Delights Backend v2.1.0 running on port ${PORT}`);
     console.log(`📁 Upload directory: ${uploadDir}`);
     console.log(`🖼️ Gallery images: ${galleryImages.length}`);
     console.log(`🔐 Admin authentication enabled`);
     console.log(`📊 Analytics tracking enabled`);
     console.log(`📱 Responsive image support enabled`);
-    console.log(`🚀 Features: Admin Auth, Responsive Images, Analytics, Email`);
+    console.log(`🌍 Universal image access enabled with fallback routes`);
+    console.log(`🚀 Features: Admin Auth, Universal Images, Analytics, Email`);
 }).on('error', (error) => {
     console.error('Server error:', error);
 });
