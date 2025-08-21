@@ -71,9 +71,29 @@ function ensureUploadsDir() {
 }
 
 ensureUploadsDir();
-app.use('/uploads', express.static(uploadDir));
 
-// Multer configuration
+// Enhanced static file serving with better headers
+app.use('/uploads', express.static(uploadDir, {
+    maxAge: '1y', // Cache for 1 year
+    etag: true,
+    lastModified: true,
+    setHeaders: (res, path) => {
+        // Set proper content type for images
+        if (path.endsWith('.jpg') || path.endsWith('.jpeg')) {
+            res.set('Content-Type', 'image/jpeg');
+        } else if (path.endsWith('.png')) {
+            res.set('Content-Type', 'image/png');
+        } else if (path.endsWith('.webp')) {
+            res.set('Content-Type', 'image/webp');
+        }
+        
+        // Enable cross-origin access for images
+        res.set('Access-Control-Allow-Origin', '*');
+        res.set('Cross-Origin-Resource-Policy', 'cross-origin');
+    }
+}));
+
+// Enhanced Multer configuration with better file handling
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
         ensureUploadsDir();
@@ -82,26 +102,39 @@ const storage = multer.diskStorage({
     filename: function (req, file, cb) {
         const timestamp = Date.now();
         const random = Math.round(Math.random() * 1E9);
-        const extension = path.extname(file.originalname);
-        const safeName = file.originalname.replace(/[^a-zA-Z0-9.]/g, '_');
-        const uniqueName = `${timestamp}-${random}-${safeName}`;
+        const extension = path.extname(file.originalname).toLowerCase();
+        const baseName = path.basename(file.originalname, extension);
+        const safeName = baseName.replace(/[^a-zA-Z0-9]/g, '_');
+        const uniqueName = `${timestamp}-${random}-${safeName}${extension}`;
         cb(null, uniqueName);
     }
 });
 
+// Enhanced file filter with better validation
+const fileFilter = (req, file, cb) => {
+    // Accept images only
+    const allowedMimeTypes = [
+        'image/jpeg',
+        'image/jpg', 
+        'image/png',
+        'image/webp',
+        'image/gif'
+    ];
+    
+    if (allowedMimeTypes.includes(file.mimetype.toLowerCase())) {
+        cb(null, true);
+    } else {
+        cb(new Error(`Invalid file type: ${file.mimetype}. Only JPEG, PNG, WebP, and GIF images are allowed.`), false);
+    }
+};
+
 const upload = multer({
     storage: storage,
     limits: { 
-        fileSize: 10 * 1024 * 1024,
+        fileSize: 10 * 1024 * 1024, // 10MB limit
         files: 1 
     },
-    fileFilter: function (req, file, cb) {
-        if (file.mimetype.startsWith('image/')) {
-            cb(null, true);
-        } else {
-            cb(new Error(`Invalid file type: ${file.mimetype}. Only images are allowed.`), false);
-        }
-    }
+    fileFilter: fileFilter
 });
 
 // Data storage (In production, use database)
@@ -327,7 +360,9 @@ app.get('/api/admin/analytics', authMiddleware, (req, res) => {
             chatInteractions: analyticsEvents.filter(e => e.type === 'chat_message').length,
             contactSubmissions: analyticsEvents.filter(e => e.type === 'contact_submit').length,
             customOrders: analyticsEvents.filter(e => e.type === 'custom_order').length,
-            adminLogins: analyticsEvents.filter(e => e.type === 'admin_login').length
+            adminLogins: analyticsEvents.filter(e => e.type === 'admin_login').length,
+            imageUploads: analyticsEvents.filter(e => e.type === 'admin_upload_success').length,
+            imageViews: analyticsEvents.filter(e => e.type === 'image_view').length
         };
         
         // Track analytics view
@@ -380,7 +415,7 @@ app.get('/', (req, res) => {
         message: 'Warm Delights Backend is running!',
         timestamp: new Date().toISOString(),
         version: '2.0.0',
-        features: ['Analytics', 'Admin Auth', 'Image Upload', 'Contact Forms'],
+        features: ['Analytics', 'Admin Auth', 'Responsive Images', 'Contact Forms'],
         uploadDir: uploadDir,
         uploadsExists: fs.existsSync(uploadDir),
         uploadsIsDirectory: fs.existsSync(uploadDir) ? fs.statSync(uploadDir).isDirectory() : false
@@ -392,7 +427,8 @@ app.get('/health', (req, res) => {
         status: 'healthy',
         timestamp: new Date().toISOString(),
         uptime: process.uptime(),
-        activeSessions: adminSessions.size
+        activeSessions: adminSessions.size,
+        totalImages: galleryImages.length
     });
 });
 
@@ -548,7 +584,7 @@ app.get('/api/menu', (req, res) => {
     }
 });
 
-// Secure gallery upload (protected)
+// Enhanced gallery upload (protected) with better error handling and metadata
 app.post('/api/admin/gallery/upload', authMiddleware, (req, res) => {
     console.log('📸 Admin gallery upload endpoint hit');
     
@@ -600,6 +636,7 @@ app.post('/api/admin/gallery/upload', authMiddleware, (req, res) => {
             });
         }
 
+        // Enhanced image data with responsive support
         const imageData = {
             id: Date.now(),
             filename: req.file.filename,
@@ -607,8 +644,13 @@ app.post('/api/admin/gallery/upload', authMiddleware, (req, res) => {
             url: `/uploads/${req.file.filename}`,
             mimetype: req.file.mimetype,
             size: req.file.size,
+            dimensions: null, // Could be added with image processing library
+            alt: `Warm Delights ${req.file.originalname.split('.')[0]}`,
             uploadedAt: new Date(),
-            uploadedBy: req.admin.username
+            uploadedBy: req.admin.username,
+            isPublic: true,
+            tags: [], // Could be expanded for categorization
+            views: 0
         };
 
         galleryImages.push(imageData);
@@ -619,7 +661,8 @@ app.post('/api/admin/gallery/upload', authMiddleware, (req, res) => {
             timestamp: new Date().toISOString(),
             sessionId: req.admin.sessionId,
             filename: req.file.filename,
-            size: req.file.size
+            size: req.file.size,
+            mimetype: req.file.mimetype
         });
 
         console.log('✅ Admin uploaded image:', imageData.filename);
@@ -632,20 +675,114 @@ app.post('/api/admin/gallery/upload', authMiddleware, (req, res) => {
     });
 });
 
-// Get gallery images (public)
+// Enhanced gallery images endpoint (public) with pagination and filtering
 app.get('/api/gallery', (req, res) => {
-    console.log('🖼️ Gallery API called, returning', galleryImages.length, 'images');
-    res.json(galleryImages);
+    try {
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 20;
+        const startIndex = (page - 1) * limit;
+        const endIndex = startIndex + limit;
+        
+        // Filter only public images and sort by upload date (newest first)
+        const publicImages = galleryImages
+            .filter(img => img.isPublic)
+            .sort((a, b) => new Date(b.uploadedAt) - new Date(a.uploadedAt));
+            
+        const paginatedImages = publicImages.slice(startIndex, endIndex);
+        
+        // Return optimized image data for frontend
+        const imageData = paginatedImages.map(img => ({
+            id: img.id,
+            filename: img.filename,
+            url: img.url,
+            alt: img.alt,
+            size: img.size,
+            uploadedAt: img.uploadedAt,
+            views: img.views
+        }));
+
+        // Track gallery view
+        analyticsEvents.push({
+            type: 'gallery_viewed',
+            timestamp: new Date().toISOString(),
+            ip: req.ip,
+            imagesCount: imageData.length
+        });
+
+        console.log(`🖼️ Gallery API called, returning ${imageData.length} images (page ${page})`);
+        
+        res.json({
+            images: imageData,
+            pagination: {
+                current: page,
+                total: Math.ceil(publicImages.length / limit),
+                hasNext: endIndex < publicImages.length,
+                hasPrev: page > 1,
+                totalImages: publicImages.length
+            }
+        });
+        
+    } catch (error) {
+        console.error('❌ Gallery error:', error);
+        res.status(500).json({ error: 'Failed to load gallery' });
+    }
 });
 
-// Delete image (protected)
+// Simple images endpoint for backwards compatibility
+app.get('/api/images', (req, res) => {
+    try {
+        const imageFilenames = galleryImages
+            .filter(img => img.isPublic)
+            .sort((a, b) => new Date(b.uploadedAt) - new Date(a.uploadedAt))
+            .map(img => img.filename);
+
+        console.log(`🖼️ Images API called, returning ${imageFilenames.length} filenames`);
+        res.json(imageFilenames);
+        
+    } catch (error) {
+        console.error('❌ Images error:', error);
+        res.status(500).json({ error: 'Failed to load images' });
+    }
+});
+
+// Track image views
+app.get('/api/images/:filename/view', (req, res) => {
+    try {
+        const filename = req.params.filename;
+        const image = galleryImages.find(img => img.filename === filename);
+        
+        if (image) {
+            image.views = (image.views || 0) + 1;
+            
+            // Track image view
+            analyticsEvents.push({
+                type: 'image_view',
+                timestamp: new Date().toISOString(),
+                filename: filename,
+                imageId: image.id,
+                ip: req.ip
+            });
+        }
+        
+        res.json({ success: true, views: image ? image.views : 0 });
+        
+    } catch (error) {
+        console.error('❌ Image view tracking error:', error);
+        res.status(500).json({ error: 'View tracking failed' });
+    }
+});
+
+// Enhanced delete image (protected) with better cleanup
 app.delete('/api/admin/gallery/:id', authMiddleware, (req, res) => {
     try {
         const imageId = parseInt(req.params.id);
         const imageIndex = galleryImages.findIndex(img => img.id === imageId);
 
         if (imageIndex === -1) {
-            return res.status(404).json({ error: 'Image not found' });
+            return res.status(404).json({ 
+                error: 'Image not found',
+                message: 'The requested image does not exist'
+            });
         }
 
         const image = galleryImages[imageIndex];
@@ -655,7 +792,9 @@ app.delete('/api/admin/gallery/:id', authMiddleware, (req, res) => {
         try {
             if (fs.existsSync(filePath)) {
                 fs.unlinkSync(filePath);
-                console.log('✅ File deleted from filesystem');
+                console.log('✅ File deleted from filesystem:', image.filename);
+            } else {
+                console.log('⚠️ File not found on filesystem:', image.filename);
             }
         } catch (fileError) {
             console.error('❌ File deletion error:', fileError);
@@ -670,18 +809,28 @@ app.delete('/api/admin/gallery/:id', authMiddleware, (req, res) => {
             timestamp: new Date().toISOString(),
             sessionId: req.admin.sessionId,
             imageId: imageId,
-            filename: image.filename
+            filename: image.filename,
+            originalName: image.originalName
         });
 
         console.log('✅ Admin deleted image:', image.filename);
 
         res.json({
             success: true,
-            message: 'Image deleted successfully'
+            message: 'Image deleted successfully',
+            deletedImage: {
+                id: imageId,
+                filename: image.filename,
+                originalName: image.originalName
+            }
         });
+        
     } catch (error) {
         console.error('❌ Delete error:', error);
-        res.status(500).json({ error: 'Delete failed' });
+        res.status(500).json({ 
+            error: 'Delete failed',
+            message: 'Could not delete image'
+        });
     }
 });
 
@@ -877,20 +1026,32 @@ app.post('/api/contact', async (req, res) => {
     }
 });
 
-// Placeholder image generator
+// Enhanced placeholder image generator with better styling
 app.get('/api/placeholder/:width/:height', (req, res) => {
     try {
         const { width, height } = req.params;
+        const text = req.query.text || '🧁 Warm Delights';
+        
         const svg = `
             <svg width="${width}" height="${height}" xmlns="http://www.w3.org/2000/svg">
-                <rect width="${width}" height="${height}" fill="#f4c2c2"/>
-                <text x="50%" y="50%" text-anchor="middle" dy=".3em" fill="#d67b8a" font-family="Arial" font-size="20">
-                    🧁 Warm Delights
+                <defs>
+                    <pattern id="grain" patternUnits="userSpaceOnUse" width="100" height="100">
+                        <rect width="100" height="100" fill="#f4c2c2"/>
+                        <circle cx="25" cy="25" r="2" fill="#f0a8a8" opacity="0.3"/>
+                        <circle cx="75" cy="75" r="1.5" fill="#f0a8a8" opacity="0.2"/>
+                    </pattern>
+                </defs>
+                <rect width="${width}" height="${height}" fill="url(#grain)"/>
+                <text x="50%" y="50%" text-anchor="middle" dy=".3em" 
+                      fill="#d67b8a" font-family="Arial, sans-serif" 
+                      font-size="${Math.min(width, height) / 10}" font-weight="bold">
+                    ${text}
                 </text>
             </svg>
         `;
         
         res.setHeader('Content-Type', 'image/svg+xml');
+        res.setHeader('Cache-Control', 'public, max-age=3600');
         res.send(svg);
     } catch (error) {
         console.error('Placeholder error:', error);
@@ -917,13 +1078,16 @@ app.use((error, req, res, next) => {
 
 // 404 handler
 app.use('*', (req, res) => {
-    res.status(404).json({ error: 'Route not found' });
+    res.status(404).json({ 
+        error: 'Route not found',
+        message: `The route ${req.originalUrl} does not exist`
+    });
 });
 
 // Cleanup expired sessions (every 30 minutes)
 setInterval(() => {
     const now = new Date();
-    const expiredSessions = [];
+    const expiredSessions = []; 
     
     adminSessions.forEach((session, sessionId) => {
         const timeDiff = now - new Date(session.loginTime);
@@ -945,9 +1109,11 @@ setInterval(() => {
 const server = app.listen(PORT, '0.0.0.0', () => {
     console.log(`✅ Warm Delights Backend v2.0.0 running on port ${PORT}`);
     console.log(`📁 Upload directory: ${uploadDir}`);
+    console.log(`🖼️ Gallery images: ${galleryImages.length}`);
     console.log(`🔐 Admin authentication enabled`);
     console.log(`📊 Analytics tracking enabled`);
-    console.log(`🚀 Features: Admin Auth, Image Upload, Analytics, Email`);
+    console.log(`📱 Responsive image support enabled`);
+    console.log(`🚀 Features: Admin Auth, Responsive Images, Analytics, Email`);
 }).on('error', (error) => {
     console.error('Server error:', error);
 });
