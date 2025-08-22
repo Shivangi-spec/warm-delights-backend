@@ -23,6 +23,284 @@ const PORT = process.env.PORT || 5000;
 const ADMIN_USERNAME = process.env.ADMIN_USERNAME || 'warmdelights_admin';
 const ADMIN_PASSWORD_HASH = process.env.ADMIN_PASSWORD_HASH || bcrypt.hashSync('SecurePass@2025!', 10);
 const JWT_SECRET = process.env.JWT_SECRET || 'warmdelights-secret-key-2025';
+const ADMIN_TOKEN = process.env.ADMIN_TOKEN || 'warmdelights_admin_token_2025';
+
+// **🌍 GLOBAL SERVER STORAGE CLASS**
+class GlobalImageStorage {
+    constructor() {
+        this.uploadDir = path.join(__dirname, 'uploads');
+        this.dataFile = path.join(__dirname, 'global_gallery.json');
+        this.sessionFile = path.join(__dirname, 'session_cache.json');
+        this.images = [];
+        this.sessionCache = new Map();
+        this.adminSessions = new Map();
+        this.analyticsEvents = [];
+        this.orders = [];
+        this.orderIdCounter = 1;
+        this.init();
+    }
+
+    init() {
+        // Ensure uploads directory exists
+        this.ensureUploadsDir();
+        
+        // Load persistent data
+        this.loadGalleryData();
+        this.loadSessionData();
+        
+        console.log(`✅ Global Storage initialized with ${this.images.length} images`);
+        console.log(`📊 Loaded ${this.analyticsEvents.length} analytics events`);
+        console.log(`🛒 Loaded ${this.orders.length} orders`);
+    }
+
+    ensureUploadsDir() {
+        try {
+            if (!fs.existsSync(this.uploadDir)) {
+                fs.mkdirSync(this.uploadDir, { recursive: true });
+                console.log('✅ Global uploads directory created:', this.uploadDir);
+            }
+        } catch (error) {
+            console.error('❌ Error creating uploads directory:', error);
+            throw error;
+        }
+    }
+
+    // **💾 PERSISTENT GALLERY STORAGE**
+    loadGalleryData() {
+        try {
+            if (fs.existsSync(this.dataFile)) {
+                const data = fs.readFileSync(this.dataFile, 'utf8');
+                const parsed = JSON.parse(data);
+                this.images = parsed.images || [];
+                this.analyticsEvents = parsed.analytics || [];
+                this.orders = parsed.orders || [];
+                this.orderIdCounter = parsed.orderIdCounter || 1;
+                console.log('✅ Gallery data loaded from disk');
+            }
+        } catch (error) {
+            console.error('❌ Error loading gallery data:', error);
+            this.images = [];
+            this.analyticsEvents = [];
+            this.orders = [];
+        }
+    }
+
+    saveGalleryData() {
+        try {
+            const data = {
+                images: this.images,
+                analytics: this.analyticsEvents.slice(-5000), // Keep last 5000 events
+                orders: this.orders,
+                orderIdCounter: this.orderIdCounter,
+                lastUpdated: new Date().toISOString()
+            };
+            fs.writeFileSync(this.dataFile, JSON.stringify(data, null, 2));
+        } catch (error) {
+            console.error('❌ Error saving gallery data:', error);
+        }
+    }
+
+    // **🔄 SESSION CACHE MANAGEMENT**
+    loadSessionData() {
+        try {
+            if (fs.existsSync(this.sessionFile)) {
+                const data = fs.readFileSync(this.sessionFile, 'utf8');
+                const parsed = JSON.parse(data);
+                // Convert to Map
+                Object.entries(parsed).forEach(([key, value]) => {
+                    this.sessionCache.set(key, value);
+                });
+                console.log('✅ Session cache loaded');
+            }
+        } catch (error) {
+            console.error('❌ Error loading session data:', error);
+        }
+    }
+
+    saveSessionData() {
+        try {
+            const data = Object.fromEntries(this.sessionCache);
+            fs.writeFileSync(this.sessionFile, JSON.stringify(data, null, 2));
+        } catch (error) {
+            console.error('❌ Error saving session data:', error);
+        }
+    }
+
+    // **🖼️ IMAGE MANAGEMENT**
+    addImage(imageData) {
+        const image = {
+            id: Date.now(),
+            filename: imageData.filename,
+            originalName: imageData.originalName,
+            uploadedBy: imageData.uploadedBy,
+            size: imageData.size,
+            mimeType: imageData.mimeType,
+            uploadedAt: new Date().toISOString(),
+            views: 0,
+            isPublic: true,
+            url: `/uploads/${imageData.filename}`,
+            alt: `Warm Delights - ${imageData.originalName}`,
+            tags: []
+        };
+
+        this.images.push(image);
+        this.saveGalleryData();
+        
+        // Update session cache
+        this.updateSessionCache('gallery', this.getPublicImages());
+        
+        console.log(`✅ Image added to global storage: ${image.filename}`);
+        return image;
+    }
+
+    removeImage(imageId) {
+        const imageIndex = this.images.findIndex(img => img.id === imageId);
+        if (imageIndex === -1) return null;
+
+        const [removedImage] = this.images.splice(imageIndex, 1);
+        this.saveGalleryData();
+        
+        // Update session cache
+        this.updateSessionCache('gallery', this.getPublicImages());
+        
+        console.log(`✅ Image removed from global storage: ${removedImage.filename}`);
+        return removedImage;
+    }
+
+    getPublicImages() {
+        return this.images
+            .filter(img => img.isPublic)
+            .sort((a, b) => new Date(b.uploadedAt) - new Date(a.uploadedAt));
+    }
+
+    incrementImageViews(filename) {
+        const image = this.images.find(img => img.filename === filename);
+        if (image) {
+            image.views = (image.views || 0) + 1;
+            this.saveGalleryData();
+            return image.views;
+        }
+        return 0;
+    }
+
+    // **📊 ANALYTICS MANAGEMENT**
+    trackEvent(eventType, data = {}) {
+        const event = {
+            id: Date.now(),
+            type: eventType,
+            data: data,
+            timestamp: new Date().toISOString(),
+            ip: data.ip || 'unknown'
+        };
+
+        this.analyticsEvents.push(event);
+        
+        // Keep only last 10000 events in memory
+        if (this.analyticsEvents.length > 10000) {
+            this.analyticsEvents = this.analyticsEvents.slice(-10000);
+        }
+        
+        this.saveGalleryData();
+        return event;
+    }
+
+    getAnalyticsStats() {
+        const today = new Date().toDateString();
+        
+        return {
+            totalVisitors: this.analyticsEvents.filter(e => e.type === 'page_visit').length,
+            todayVisitors: this.analyticsEvents.filter(e => 
+                e.type === 'page_visit' && 
+                new Date(e.timestamp).toDateString() === today
+            ).length,
+            cartAdditions: this.analyticsEvents.filter(e => e.type === 'cart_add').length,
+            whatsappOrders: this.analyticsEvents.filter(e => e.type === 'whatsapp_order').length,
+            contactSubmissions: this.analyticsEvents.filter(e => e.type === 'contact_submit').length,
+            imageUploads: this.analyticsEvents.filter(e => e.type === 'admin_upload_success').length,
+            imageViews: this.analyticsEvents.filter(e => e.type === 'image_view').length,
+            totalEvents: this.analyticsEvents.length
+        };
+    }
+
+    // **🛒 ORDER MANAGEMENT**
+    addOrder(orderData) {
+        const order = {
+            id: this.orderIdCounter++,
+            ...orderData,
+            status: 'pending',
+            createdAt: new Date().toISOString()
+        };
+
+        this.orders.push(order);
+        this.saveGalleryData();
+        
+        return order;
+    }
+
+    getOrders(limit = 50) {
+        return this.orders.slice(-limit).reverse();
+    }
+
+    // **🔄 SESSION CACHE METHODS**
+    updateSessionCache(key, value) {
+        this.sessionCache.set(key, {
+            data: value,
+            timestamp: Date.now(),
+            expires: Date.now() + (15 * 60 * 1000) // 15 minutes
+        });
+        this.saveSessionData();
+    }
+
+    getFromSessionCache(key) {
+        const cached = this.sessionCache.get(key);
+        if (cached && cached.expires > Date.now()) {
+            return cached.data;
+        }
+        this.sessionCache.delete(key);
+        return null;
+    }
+
+    clearExpiredSessions() {
+        const now = Date.now();
+        let cleared = 0;
+        
+        for (const [key, value] of this.sessionCache.entries()) {
+            if (value.expires < now) {
+                this.sessionCache.delete(key);
+                cleared++;
+            }
+        }
+        
+        if (cleared > 0) {
+            console.log(`🗑️ Cleared ${cleared} expired session cache entries`);
+            this.saveSessionData();
+        }
+    }
+
+    // **👤 ADMIN SESSION MANAGEMENT**
+    createAdminSession(username, loginData) {
+        const sessionId = `session_${Date.now()}_${Math.random().toString(36)}`;
+        
+        this.adminSessions.set(sessionId, {
+            username: username,
+            loginTime: new Date(),
+            ...loginData
+        });
+        
+        return sessionId;
+    }
+
+    validateAdminSession(sessionId) {
+        return this.adminSessions.has(sessionId);
+    }
+
+    removeAdminSession(sessionId) {
+        return this.adminSessions.delete(sessionId);
+    }
+}
+
+// **🌍 INITIALIZE GLOBAL STORAGE**
+const globalStorage = new GlobalImageStorage();
 
 // Rate limiting for authentication
 const authLimiter = rateLimit({
@@ -47,84 +325,14 @@ app.options('*', cors());
 app.use(bodyParser.json({ limit: '10mb' }));
 app.use(bodyParser.urlencoded({ extended: true, limit: '10mb' }));
 
-// Create uploads directory
-const uploadDir = path.join(__dirname, 'uploads');
-
-function ensureUploadsDir() {
-    try {
-        if (fs.existsSync(uploadDir)) {
-            const stats = fs.statSync(uploadDir);
-            if (stats.isFile()) {
-                fs.unlinkSync(uploadDir);
-            } else if (stats.isDirectory()) {
-                return;
-            }
-        }
-        
-        fs.mkdirSync(uploadDir, { recursive: true });
-        console.log('✅ Uploads directory created:', uploadDir);
-        
-    } catch (error) {
-        console.error('❌ Error creating uploads directory:', error);
-        throw error;
-    }
-}
-
-ensureUploadsDir();
-
-// Enhanced static file serving with better headers
-app.use('/uploads', express.static(uploadDir, {
+// **🖼️ ENHANCED STATIC FILE SERVING**
+app.use('/uploads', express.static(globalStorage.uploadDir, {
     maxAge: '1y', // Cache for 1 year
     etag: true,
     lastModified: true,
-    setHeaders: (res, path) => {
+    setHeaders: (res, filePath) => {
         // Set proper content type for images
-        if (path.endsWith('.jpg') || path.endsWith('.jpeg')) {
-            res.set('Content-Type', 'image/jpeg');
-        } else if (path.endsWith('.png')) {
-            res.set('Content-Type', 'image/png');
-        } else if (path.endsWith('.webp')) {
-            res.set('Content-Type', 'image/webp');
-        } else if (path.endsWith('.gif')) {
-            res.set('Content-Type', 'image/gif');
-        }
-        
-        // CRITICAL: Enable cross-origin access for images
-        res.set('Access-Control-Allow-Origin', '*');
-        res.set('Cross-Origin-Resource-Policy', 'cross-origin');
-        res.set('Cross-Origin-Embedder-Policy', 'unsafe-none');
-    }
-}));
-
-// Alternative static serving routes for better accessibility
-app.use('/api/uploads', express.static(uploadDir, {
-    setHeaders: (res, path) => {
-        res.set('Access-Control-Allow-Origin', '*');
-        res.set('Cross-Origin-Resource-Policy', 'cross-origin');
-    }
-}));
-
-app.use('/images', express.static(uploadDir, {
-    setHeaders: (res, path) => {
-        res.set('Access-Control-Allow-Origin', '*');
-        res.set('Cross-Origin-Resource-Policy', 'cross-origin');
-    }
-}));
-
-// CRITICAL: Fallback route for image serving with manual CORS
-app.get('/uploads/:filename', (req, res) => {
-    const filename = req.params.filename;
-    const filepath = path.join(uploadDir, filename);
-    
-    // Check if file exists
-    if (fs.existsSync(filepath)) {
-        // Set CORS headers manually
-        res.setHeader('Access-Control-Allow-Origin', '*');
-        res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
-        res.setHeader('Cross-Origin-Embedder-Policy', 'unsafe-none');
-        
-        // Set proper content type
-        const ext = path.extname(filename).toLowerCase();
+        const ext = path.extname(filePath).toLowerCase();
         const mimeTypes = {
             '.jpg': 'image/jpeg',
             '.jpeg': 'image/jpeg',
@@ -137,44 +345,33 @@ app.get('/uploads/:filename', (req, res) => {
             res.setHeader('Content-Type', mimeTypes[ext]);
         }
         
-        res.sendFile(filepath);
-    } else {
-        res.status(404).json({ error: 'Image not found' });
-    }
-});
-
-// Additional fallback routes
-app.get('/api/uploads/:filename', (req, res) => {
-    const filename = req.params.filename;
-    const filepath = path.join(uploadDir, filename);
-    
-    if (fs.existsSync(filepath)) {
+        // CRITICAL: Enable cross-origin access for images
         res.setHeader('Access-Control-Allow-Origin', '*');
         res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
-        res.sendFile(filepath);
-    } else {
-        res.status(404).json({ error: 'Image not found' });
+        res.setHeader('Cross-Origin-Embedder-Policy', 'unsafe-none');
+        res.setHeader('Cache-Control', 'public, max-age=31536000'); // 1 year cache
     }
-});
+}));
 
-app.get('/images/:filename', (req, res) => {
-    const filename = req.params.filename;
-    const filepath = path.join(uploadDir, filename);
-    
-    if (fs.existsSync(filepath)) {
+// Alternative static serving routes
+app.use('/api/uploads', express.static(globalStorage.uploadDir, {
+    setHeaders: (res, path) => {
         res.setHeader('Access-Control-Allow-Origin', '*');
         res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
-        res.sendFile(filepath);
-    } else {
-        res.status(404).json({ error: 'Image not found' });
     }
-});
+}));
 
-// Enhanced Multer configuration with better file handling
+app.use('/images', express.static(globalStorage.uploadDir, {
+    setHeaders: (res, path) => {
+        res.setHeader('Access-Control-Allow-Origin', '*');
+        res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
+    }
+}));
+
+// **📤 MULTER CONFIGURATION**
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
-        ensureUploadsDir();
-        cb(null, uploadDir);
+        cb(null, globalStorage.uploadDir);
     },
     filename: function (req, file, cb) {
         const timestamp = Date.now();
@@ -187,15 +384,9 @@ const storage = multer.diskStorage({
     }
 });
 
-// Enhanced file filter with better validation
 const fileFilter = (req, file, cb) => {
-    // Accept images only
     const allowedMimeTypes = [
-        'image/jpeg',
-        'image/jpg', 
-        'image/png',
-        'image/webp',
-        'image/gif'
+        'image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif'
     ];
     
     if (allowedMimeTypes.includes(file.mimetype.toLowerCase())) {
@@ -214,14 +405,7 @@ const upload = multer({
     fileFilter: fileFilter
 });
 
-// Data storage (In production, use database)
-let orders = [];
-let orderIdCounter = 1;
-let galleryImages = [];
-let analyticsEvents = [];
-let adminSessions = new Map();
-
-// Email transporter
+// Email transporter (keep existing)
 let transporter = null;
 try {
     if (process.env.EMAIL_USER && process.env.EMAIL_PASS) {
@@ -237,7 +421,7 @@ try {
     console.log('Email setup failed, continuing without email functionality');
 }
 
-// Authentication middleware
+// **🔐 AUTHENTICATION MIDDLEWARE**
 function authMiddleware(req, res, next) {
     try {
         const authHeader = req.headers.authorization;
@@ -259,7 +443,7 @@ function authMiddleware(req, res, next) {
         }
 
         // Check if session is still valid
-        if (!adminSessions.has(decoded.sessionId)) {
+        if (!globalStorage.validateAdminSession(decoded.sessionId)) {
             return res.status(401).json({ 
                 error: 'Unauthorized', 
                 message: 'Session expired' 
@@ -276,7 +460,7 @@ function authMiddleware(req, res, next) {
     }
 }
 
-// Admin login endpoint
+// **🔑 ADMIN LOGIN WITH GLOBAL STORAGE**
 app.post('/api/admin/login', authLimiter, async (req, res) => {
     try {
         const { username, password } = req.body;
@@ -293,8 +477,11 @@ app.post('/api/admin/login', authLimiter, async (req, res) => {
         const isValidPassword = await bcrypt.compare(password, ADMIN_PASSWORD_HASH);
 
         if (!isValidUsername || !isValidPassword) {
-            // Log failed attempt
-            console.log(`❌ Failed admin login attempt from IP: ${req.ip}`);
+            // Track failed attempt
+            globalStorage.trackEvent('admin_login_failed', {
+                ip: req.ip,
+                userAgent: req.get('User-Agent')
+            });
             
             return res.status(401).json({
                 success: false,
@@ -302,13 +489,8 @@ app.post('/api/admin/login', authLimiter, async (req, res) => {
             });
         }
 
-        // Create session
-        const sessionId = `session_${Date.now()}_${Math.random().toString(36)}`;
-        const loginTime = new Date();
-        
-        adminSessions.set(sessionId, {
-            username: username,
-            loginTime: loginTime,
+        // Create session in global storage
+        const sessionId = globalStorage.createAdminSession(username, {
             ip: req.ip,
             userAgent: req.get('User-Agent')
         });
@@ -317,20 +499,16 @@ app.post('/api/admin/login', authLimiter, async (req, res) => {
         const token = jwt.sign({
             username: username,
             isAdmin: true,
-            sessionId: sessionId,
-            loginTime: loginTime
+            sessionId: sessionId
         }, JWT_SECRET, { expiresIn: '2h' });
 
-        console.log(`✅ Admin login successful for: ${username}`);
-        
-        // Track login event
-        analyticsEvents.push({
-            type: 'admin_login',
-            timestamp: new Date().toISOString(),
-            ip: req.ip,
-            userAgent: req.get('User-Agent'),
-            sessionId: sessionId
+        // Track successful login
+        globalStorage.trackEvent('admin_login_success', {
+            sessionId: sessionId,
+            ip: req.ip
         });
+
+        console.log(`✅ Admin login successful: ${username}`);
 
         res.json({
             success: true,
@@ -348,39 +526,226 @@ app.post('/api/admin/login', authLimiter, async (req, res) => {
     }
 });
 
-// Admin logout endpoint
-app.post('/api/admin/logout', authMiddleware, (req, res) => {
-    try {
-        const sessionId = req.admin.sessionId;
-        
-        if (adminSessions.has(sessionId)) {
-            adminSessions.delete(sessionId);
+// **📤 IMAGE UPLOAD TO GLOBAL STORAGE**
+app.post('/api/admin/gallery/upload', authMiddleware, (req, res) => {
+    console.log('📸 Admin gallery upload to global storage');
+    
+    upload.single('image')(req, res, function(err) {
+        if (err) {
+            console.error('❌ Upload error:', err);
             
-            // Track logout event
-            analyticsEvents.push({
-                type: 'admin_logout',
-                timestamp: new Date().toISOString(),
-                sessionId: sessionId
+            globalStorage.trackEvent('admin_upload_failed', {
+                sessionId: req.admin.sessionId,
+                error: err.message
             });
             
-            console.log(`✅ Admin logout successful for session: ${sessionId}`);
+            if (err instanceof multer.MulterError) {
+                if (err.code === 'LIMIT_FILE_SIZE') {
+                    return res.status(400).json({
+                        error: 'File too large',
+                        message: 'File size must be less than 10MB'
+                    });
+                }
+            }
+            
+            return res.status(400).json({
+                error: 'Upload failed',
+                message: err.message
+            });
         }
+
+        if (!req.file) {
+            return res.status(400).json({
+                error: 'No file uploaded',
+                message: 'Please select an image file'
+            });
+        }
+
+        // **💾 ADD TO GLOBAL STORAGE**
+        const imageData = globalStorage.addImage({
+            filename: req.file.filename,
+            originalName: req.file.originalname,
+            uploadedBy: req.admin.username,
+            size: req.file.size,
+            mimeType: req.file.mimetype
+        });
+
+        // Track successful upload
+        globalStorage.trackEvent('admin_upload_success', {
+            sessionId: req.admin.sessionId,
+            filename: req.file.filename,
+            size: req.file.size
+        });
+
+        console.log('✅ Image uploaded to global storage:', imageData.filename);
 
         res.json({
             success: true,
-            message: 'Logout successful'
+            message: 'Image uploaded to global storage!',
+            image: imageData
+        });
+    });
+});
+
+// **🖼️ PUBLIC GALLERY FROM GLOBAL STORAGE**
+app.get('/api/gallery', (req, res) => {
+    try {
+        // Try to get from session cache first
+        let images = globalStorage.getFromSessionCache('gallery');
+        
+        if (!images) {
+            // If not cached, get from storage and cache it
+            images = globalStorage.getPublicImages();
+            globalStorage.updateSessionCache('gallery', images);
+            console.log('🔄 Gallery loaded from global storage and cached');
+        } else {
+            console.log('⚡ Gallery served from session cache');
+        }
+
+        const imageData = images.map(img => ({
+            id: img.id,
+            filename: img.filename,
+            url: img.url,
+            alt: img.alt,
+            views: img.views,
+            uploadedAt: img.uploadedAt
+        }));
+
+        // Track gallery view
+        globalStorage.trackEvent('gallery_viewed', {
+            ip: req.ip,
+            imagesCount: imageData.length,
+            source: images === globalStorage.getFromSessionCache('gallery') ? 'cache' : 'storage'
         });
 
+        console.log(`🌍 Global gallery served: ${imageData.length} images`);
+
+        res.json({
+            success: true,
+            images: imageData,
+            totalImages: imageData.length,
+            source: 'global-storage',
+            cached: images === globalStorage.getFromSessionCache('gallery')
+        });
+        
     } catch (error) {
-        console.error('❌ Admin logout error:', error);
-        res.status(500).json({
-            success: false,
-            message: 'Logout failed'
+        console.error('❌ Gallery error:', error);
+        res.status(500).json({ error: 'Failed to load gallery from global storage' });
+    }
+});
+
+// **📱 SIMPLE IMAGES ENDPOINT**
+app.get('/api/images', (req, res) => {
+    try {
+        const images = globalStorage.getPublicImages();
+        const filenames = images.map(img => img.filename);
+        
+        console.log(`📱 Images API served: ${filenames.length} filenames from global storage`);
+        res.json(filenames);
+        
+    } catch (error) {
+        console.error('❌ Images error:', error);
+        res.status(500).json({ error: 'Failed to load images from global storage' });
+    }
+});
+
+// **👁️ TRACK IMAGE VIEWS IN GLOBAL STORAGE**
+app.post('/api/images/:filename/view', (req, res) => {
+    try {
+        const filename = req.params.filename;
+        const views = globalStorage.incrementImageViews(filename);
+        
+        globalStorage.trackEvent('image_view', {
+            filename: filename,
+            ip: req.ip,
+            views: views
+        });
+        
+        res.json({ success: true, views: views });
+        
+    } catch (error) {
+        console.error('❌ Image view tracking error:', error);
+        res.status(500).json({ error: 'View tracking failed' });
+    }
+});
+
+// **🗑️ DELETE FROM GLOBAL STORAGE**
+app.delete('/api/admin/gallery/:id', authMiddleware, (req, res) => {
+    try {
+        const imageId = parseInt(req.params.id);
+        const removedImage = globalStorage.removeImage(imageId);
+
+        if (!removedImage) {
+            return res.status(404).json({ 
+                error: 'Image not found',
+                message: 'The requested image does not exist in global storage'
+            });
+        }
+
+        // Delete file from filesystem
+        const filePath = path.join(globalStorage.uploadDir, removedImage.filename);
+        try {
+            if (fs.existsSync(filePath)) {
+                fs.unlinkSync(filePath);
+                console.log('✅ File deleted from filesystem:', removedImage.filename);
+            }
+        } catch (fileError) {
+            console.error('❌ File deletion error:', fileError);
+        }
+
+        // Track deletion
+        globalStorage.trackEvent('admin_image_deleted', {
+            sessionId: req.admin.sessionId,
+            imageId: imageId,
+            filename: removedImage.filename
+        });
+
+        console.log('✅ Image deleted from global storage:', removedImage.filename);
+
+        res.json({
+            success: true,
+            message: 'Image deleted from global storage',
+            deletedImage: {
+                id: imageId,
+                filename: removedImage.filename
+            }
+        });
+        
+    } catch (error) {
+        console.error('❌ Delete error:', error);
+        res.status(500).json({ 
+            error: 'Delete failed',
+            message: 'Could not delete image from global storage'
         });
     }
 });
 
-// Analytics tracking endpoint
+// **📊 ANALYTICS FROM GLOBAL STORAGE**
+app.get('/api/admin/analytics', authMiddleware, (req, res) => {
+    try {
+        const stats = globalStorage.getAnalyticsStats();
+        
+        // Track analytics view
+        globalStorage.trackEvent('admin_analytics_viewed', {
+            sessionId: req.admin.sessionId
+        });
+
+        res.json({
+            success: true,
+            stats: stats,
+            source: 'global-storage'
+        });
+
+    } catch (error) {
+        console.error('❌ Analytics fetch error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to fetch analytics from global storage'
+        });
+    }
+});
+
+// **📝 ANALYTICS TRACKING**
 app.post('/api/analytics/track', (req, res) => {
     try {
         const { eventType, data } = req.body;
@@ -392,24 +757,16 @@ app.post('/api/analytics/track', (req, res) => {
             });
         }
 
-        const event = {
-            type: eventType,
-            data: data || {},
-            timestamp: new Date().toISOString(),
+        const event = globalStorage.trackEvent(eventType, {
+            ...data,
             ip: req.ip,
             userAgent: req.get('User-Agent')
-        };
-
-        analyticsEvents.push(event);
-        
-        // Keep only last 10000 events
-        if (analyticsEvents.length > 10000) {
-            analyticsEvents = analyticsEvents.slice(-10000);
-        }
+        });
 
         res.json({
             success: true,
-            message: 'Event tracked successfully'
+            message: 'Event tracked in global storage',
+            eventId: event.id
         });
 
     } catch (error) {
@@ -421,96 +778,160 @@ app.post('/api/analytics/track', (req, res) => {
     }
 });
 
-// Get analytics data (protected)
-app.get('/api/admin/analytics', authMiddleware, (req, res) => {
+// **🛒 ORDERS WITH GLOBAL STORAGE**
+app.post('/api/orders', upload.single('referenceImage'), async (req, res) => {
     try {
-        const today = new Date().toDateString();
+        const { customerName, email, phone, items, specialInstructions, deliveryDate, deliveryAddress } = req.body;
+
+        if (!customerName || !email || !phone) {
+            return res.status(400).json({
+                success: false,
+                message: 'Name, email, and phone are required'
+            });
+        }
+
+        const parsedItems = typeof items === 'string' ? JSON.parse(items) : items || [];
         
-        const stats = {
-            totalVisitors: analyticsEvents.filter(e => e.type === 'page_visit').length,
-            todayVisitors: analyticsEvents.filter(e => 
-                e.type === 'page_visit' && 
-                new Date(e.timestamp).toDateString() === today
-            ).length,
-            cartAdditions: analyticsEvents.filter(e => e.type === 'cart_add').length,
-            whatsappOrders: analyticsEvents.filter(e => e.type === 'whatsapp_order').length,
-            chatInteractions: analyticsEvents.filter(e => e.type === 'chat_message').length,
-            contactSubmissions: analyticsEvents.filter(e => e.type === 'contact_submit').length,
-            customOrders: analyticsEvents.filter(e => e.type === 'custom_order').length,
-            adminLogins: analyticsEvents.filter(e => e.type === 'admin_login').length,
-            imageUploads: analyticsEvents.filter(e => e.type === 'admin_upload_success').length,
-            imageViews: analyticsEvents.filter(e => e.type === 'image_view').length
+        const orderData = {
+            customerName,
+            email,
+            phone,
+            items: parsedItems,
+            specialInstructions,
+            deliveryDate,
+            deliveryAddress,
+            referenceImage: req.file ? req.file.filename : null,
+            totalAmount: parsedItems.reduce((total, item) => total + (item.price * item.quantity), 0)
         };
-        
-        // Track analytics view
-        analyticsEvents.push({
-            type: 'admin_analytics_viewed',
-            timestamp: new Date().toISOString(),
-            sessionId: req.admin.sessionId
+
+        const order = globalStorage.addOrder(orderData);
+
+        // Track order in analytics
+        globalStorage.trackEvent('order_placed', {
+            orderId: order.id,
+            totalAmount: order.totalAmount,
+            itemCount: parsedItems.length
         });
 
-        res.json({
+        // Send email if available
+        if (transporter) {
+            try {
+                const mailOptions = {
+                    from: process.env.EMAIL_USER,
+                    to: email,
+                    subject: 'Order Confirmation - Warm Delights',
+                    html: `
+                        <h2>Dear ${customerName},</h2>
+                        <p>We've received your order and will begin preparing it soon.</p>
+                        <p><strong>Order ID:</strong> WD${order.id.toString().padStart(4, '0')}</p>
+                        <p><strong>Delivery Date:</strong> ${deliveryDate}</p>
+                        <p><strong>Total Amount:</strong> ₹${order.totalAmount}</p>
+                        <p>Thank you for choosing Warm Delights!</p>
+                    `
+                };
+                await transporter.sendMail(mailOptions);
+            } catch (emailError) {
+                console.error('Email error:', emailError);
+            }
+        }
+
+        res.status(201).json({
             success: true,
-            stats: stats,
-            totalEvents: analyticsEvents.length
+            message: 'Order placed and stored in global storage!',
+            orderId: `WD${order.id.toString().padStart(4, '0')}`
         });
 
     } catch (error) {
-        console.error('❌ Analytics fetch error:', error);
+        console.error('Order error:', error);
         res.status(500).json({
             success: false,
-            message: 'Failed to fetch analytics'
+            message: 'Failed to place order'
         });
     }
 });
 
-// Get recent events (protected)
-app.get('/api/admin/events', authMiddleware, (req, res) => {
+// **📋 GET ORDERS FROM GLOBAL STORAGE**
+app.get('/api/admin/orders', authMiddleware, (req, res) => {
     try {
         const limit = parseInt(req.query.limit) || 50;
-        const recentEvents = analyticsEvents.slice(-limit).reverse();
+        const orders = globalStorage.getOrders(limit);
+
+        // Track order view
+        globalStorage.trackEvent('admin_orders_viewed', {
+            sessionId: req.admin.sessionId,
+            ordersCount: orders.length
+        });
 
         res.json({
             success: true,
-            events: recentEvents,
-            totalEvents: analyticsEvents.length
+            orders: orders,
+            totalOrders: globalStorage.orders.length,
+            source: 'global-storage'
         });
 
     } catch (error) {
-        console.error('❌ Events fetch error:', error);
+        console.error('❌ Orders fetch error:', error);
         res.status(500).json({
             success: false,
-            message: 'Failed to fetch events'
+            message: 'Failed to fetch orders from global storage'
         });
     }
 });
 
-// Root route
-app.get('/', (req, res) => {
-    res.json({
-        status: 'OK',
-        message: 'Warm Delights Backend is running!',
-        timestamp: new Date().toISOString(),
-        version: '2.0.0',
-        features: ['Analytics', 'Admin Auth', 'Responsive Images', 'Contact Forms', 'Universal Image Access'],
-        uploadDir: uploadDir,
-        uploadsExists: fs.existsSync(uploadDir),
-        uploadsIsDirectory: fs.existsSync(uploadDir) ? fs.statSync(uploadDir).isDirectory() : false,
-        imageCount: galleryImages.length
-    });
+// **📞 CONTACT FORM WITH GLOBAL STORAGE**
+app.post('/api/contact', async (req, res) => {
+    try {
+        const { name, email, phone, message } = req.body;
+
+        if (!name || !email || !message) {
+            return res.status(400).json({
+                success: false,
+                message: 'Name, email, and message are required'
+            });
+        }
+
+        // Track contact submission
+        globalStorage.trackEvent('contact_submit', {
+            name: name,
+            email: email,
+            ip: req.ip
+        });
+
+        if (transporter) {
+            try {
+                const mailOptions = {
+                    from: process.env.EMAIL_USER,
+                    to: process.env.EMAIL_USER,
+                    subject: 'New Contact Form Submission - Warm Delights',
+                    html: `
+                        <h3>New Contact Form Submission</h3>
+                        <p><strong>Name:</strong> ${name}</p>
+                        <p><strong>Email:</strong> ${email}</p>
+                        <p><strong>Phone:</strong> ${phone || 'Not provided'}</p>
+                        <p><strong>Message:</strong></p>
+                        <p>${message}</p>
+                    `
+                };
+                await transporter.sendMail(mailOptions);
+            } catch (emailError) {
+                console.error('Contact email error:', emailError);
+            }
+        }
+
+        res.json({
+            success: true,
+            message: 'Message sent and tracked in global storage!'
+        });
+    } catch (error) {
+        console.error('Contact form error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to send message'
+        });
+    }
 });
 
-app.get('/health', (req, res) => {
-    res.json({ 
-        status: 'healthy',
-        timestamp: new Date().toISOString(),
-        uptime: process.uptime(),
-        activeSessions: adminSessions.size,
-        totalImages: galleryImages.length
-    });
-});
-
-// Menu API
+// **📊 MENU API** (keep existing)
 app.get('/api/menu', (req, res) => {
     try {
         const menuItems = [
@@ -662,449 +1083,7 @@ app.get('/api/menu', (req, res) => {
     }
 });
 
-// Enhanced gallery upload (protected) with better error handling and metadata
-app.post('/api/admin/gallery/upload', authMiddleware, (req, res) => {
-    console.log('📸 Admin gallery upload endpoint hit');
-    
-    try {
-        ensureUploadsDir();
-    } catch (error) {
-        console.error('❌ Upload directory error:', error);
-        return res.status(500).json({
-            error: 'Server configuration error',
-            message: 'Upload directory could not be created'
-        });
-    }
-    
-    upload.single('image')(req, res, function(err) {
-        if (err) {
-            console.error('❌ Multer error:', err);
-            
-            // Track failed upload
-            analyticsEvents.push({
-                type: 'admin_upload_failed',
-                timestamp: new Date().toISOString(),
-                sessionId: req.admin.sessionId,
-                error: err.message
-            });
-            
-            if (err instanceof multer.MulterError) {
-                if (err.code === 'LIMIT_FILE_SIZE') {
-                    return res.status(400).json({
-                        error: 'File too large',
-                        message: 'File size must be less than 10MB'
-                    });
-                }
-                return res.status(400).json({
-                    error: 'Upload error',
-                    message: err.message
-                });
-            }
-            
-            return res.status(400).json({
-                error: 'Upload failed',
-                message: err.message
-            });
-        }
-
-        if (!req.file) {
-            return res.status(400).json({
-                error: 'No file uploaded',
-                message: 'Please select an image file'
-            });
-        }
-
-        // Enhanced image data with responsive support
-        const imageData = {
-            id: Date.now(),
-            filename: req.file.filename,
-            originalName: req.file.originalname,
-            url: `/uploads/${req.file.filename}`,
-            mimetype: req.file.mimetype,
-            size: req.file.size,
-            dimensions: null, // Could be added with image processing library
-            alt: `Warm Delights ${req.file.originalname.split('.')[0]}`,
-            uploadedAt: new Date(),
-            uploadedBy: req.admin.username,
-            isPublic: true,
-            tags: [], // Could be expanded for categorization
-            views: 0
-        };
-
-        galleryImages.push(imageData);
-
-        // Track successful upload
-        analyticsEvents.push({
-            type: 'admin_upload_success',
-            timestamp: new Date().toISOString(),
-            sessionId: req.admin.sessionId,
-            filename: req.file.filename,
-            size: req.file.size,
-            mimetype: req.file.mimetype
-        });
-
-        console.log('✅ Admin uploaded image:', imageData.filename);
-
-        res.json({
-            success: true,
-            message: 'Image uploaded successfully',
-            image: imageData
-        });
-    });
-});
-
-// Enhanced gallery images endpoint (public) with pagination and filtering
-app.get('/api/gallery', (req, res) => {
-    try {
-        const page = parseInt(req.query.page) || 1;
-        const limit = parseInt(req.query.limit) || 20;
-        const startIndex = (page - 1) * limit;
-        const endIndex = startIndex + limit;
-        
-        // Filter only public images and sort by upload date (newest first)
-        const publicImages = galleryImages
-            .filter(img => img.isPublic)
-            .sort((a, b) => new Date(b.uploadedAt) - new Date(a.uploadedAt));
-            
-        const paginatedImages = publicImages.slice(startIndex, endIndex);
-        
-        // Return optimized image data for frontend
-        const imageData = paginatedImages.map(img => ({
-            id: img.id,
-            filename: img.filename,
-            url: img.url,
-            alt: img.alt,
-            size: img.size,
-            uploadedAt: img.uploadedAt,
-            views: img.views
-        }));
-
-        // Track gallery view
-        analyticsEvents.push({
-            type: 'gallery_viewed',
-            timestamp: new Date().toISOString(),
-            ip: req.ip,
-            imagesCount: imageData.length
-        });
-
-        console.log(`🖼️ Gallery API called, returning ${imageData.length} images (page ${page})`);
-        
-        res.json({
-            images: imageData,
-            pagination: {
-                current: page,
-                total: Math.ceil(publicImages.length / limit),
-                hasNext: endIndex < publicImages.length,
-                hasPrev: page > 1,
-                totalImages: publicImages.length
-            }
-        });
-        
-    } catch (error) {
-        console.error('❌ Gallery error:', error);
-        res.status(500).json({ error: 'Failed to load gallery' });
-    }
-});
-
-// Simple images endpoint for backwards compatibility
-app.get('/api/images', (req, res) => {
-    try {
-        const imageFilenames = galleryImages
-            .filter(img => img.isPublic)
-            .sort((a, b) => new Date(b.uploadedAt) - new Date(a.uploadedAt))
-            .map(img => img.filename);
-
-        console.log(`🖼️ Images API called, returning ${imageFilenames.length} filenames`);
-        res.json(imageFilenames);
-        
-    } catch (error) {
-        console.error('❌ Images error:', error);
-        res.status(500).json({ error: 'Failed to load images' });
-    }
-});
-
-// Track image views
-app.get('/api/images/:filename/view', (req, res) => {
-    try {
-        const filename = req.params.filename;
-        const image = galleryImages.find(img => img.filename === filename);
-        
-        if (image) {
-            image.views = (image.views || 0) + 1;
-            
-            // Track image view
-            analyticsEvents.push({
-                type: 'image_view',
-                timestamp: new Date().toISOString(),
-                filename: filename,
-                imageId: image.id,
-                ip: req.ip
-            });
-        }
-        
-        res.json({ success: true, views: image ? image.views : 0 });
-        
-    } catch (error) {
-        console.error('❌ Image view tracking error:', error);
-        res.status(500).json({ error: 'View tracking failed' });
-    }
-});
-
-// Enhanced delete image (protected) with better cleanup
-app.delete('/api/admin/gallery/:id', authMiddleware, (req, res) => {
-    try {
-        const imageId = parseInt(req.params.id);
-        const imageIndex = galleryImages.findIndex(img => img.id === imageId);
-
-        if (imageIndex === -1) {
-            return res.status(404).json({ 
-                error: 'Image not found',
-                message: 'The requested image does not exist'
-            });
-        }
-
-        const image = galleryImages[imageIndex];
-        const filePath = path.join(uploadDir, image.filename);
-
-        // Delete file from filesystem
-        try {
-            if (fs.existsSync(filePath)) {
-                fs.unlinkSync(filePath);
-                console.log('✅ File deleted from filesystem:', image.filename);
-            } else {
-                console.log('⚠️ File not found on filesystem:', image.filename);
-            }
-        } catch (fileError) {
-            console.error('❌ File deletion error:', fileError);
-        }
-
-        // Remove from array
-        galleryImages.splice(imageIndex, 1);
-
-        // Track deletion
-        analyticsEvents.push({
-            type: 'admin_image_deleted',
-            timestamp: new Date().toISOString(),
-            sessionId: req.admin.sessionId,
-            imageId: imageId,
-            filename: image.filename,
-            originalName: image.originalName
-        });
-
-        console.log('✅ Admin deleted image:', image.filename);
-
-        res.json({
-            success: true,
-            message: 'Image deleted successfully',
-            deletedImage: {
-                id: imageId,
-                filename: image.filename,
-                originalName: image.originalName
-            }
-        });
-        
-    } catch (error) {
-        console.error('❌ Delete error:', error);
-        res.status(500).json({ 
-            error: 'Delete failed',
-            message: 'Could not delete image'
-        });
-    }
-});
-
-// Orders API
-app.post('/api/orders', upload.single('referenceImage'), async (req, res) => {
-    try {
-        const { customerName, email, phone, items, specialInstructions, deliveryDate, deliveryAddress } = req.body;
-
-        if (!customerName || !email || !phone) {
-            return res.status(400).json({
-                success: false,
-                message: 'Name, email, and phone are required'
-            });
-        }
-
-        const parsedItems = typeof items === 'string' ? JSON.parse(items) : items || [];
-        
-        const order = {
-            id: orderIdCounter++,
-            customerName,
-            email,
-            phone,
-            items: parsedItems,
-            specialInstructions,
-            deliveryDate,
-            deliveryAddress,
-            referenceImage: req.file ? req.file.filename : null,
-            status: 'pending',
-            totalAmount: parsedItems.reduce((total, item) => total + (item.price * item.quantity), 0),
-            createdAt: new Date()
-        };
-
-        orders.push(order);
-
-        // Track order
-        analyticsEvents.push({
-            type: 'order_placed',
-            timestamp: new Date().toISOString(),
-            orderId: order.id,
-            totalAmount: order.totalAmount,
-            itemCount: parsedItems.length
-        });
-
-        // Send email if available
-        if (transporter) {
-            try {
-                const mailOptions = {
-                    from: process.env.EMAIL_USER,
-                    to: email,
-                    subject: 'Order Confirmation - Warm Delights',
-                    html: `
-                        <h2>Dear ${customerName},</h2>
-                        <p>We've received your order and will begin preparing it soon.</p>
-                        <p><strong>Order ID:</strong> WD${order.id.toString().padStart(4, '0')}</p>
-                        <p><strong>Delivery Date:</strong> ${deliveryDate}</p>
-                        <p><strong>Total Amount:</strong> ₹${order.totalAmount}</p>
-                        <p>Thank you for choosing Warm Delights!</p>
-                    `
-                };
-                await transporter.sendMail(mailOptions);
-            } catch (emailError) {
-                console.error('Email error:', emailError);
-            }
-        }
-
-        res.status(201).json({
-            success: true,
-            message: 'Order placed successfully!',
-            orderId: `WD${order.id.toString().padStart(4, '0')}`
-        });
-
-    } catch (error) {
-        console.error('Order error:', error);
-        res.status(500).json({
-            success: false,
-            message: 'Failed to place order'
-        });
-    }
-});
-
-// Get orders (protected)
-app.get('/api/admin/orders', authMiddleware, (req, res) => {
-    try {
-        const limit = parseInt(req.query.limit) || 50;
-        const recentOrders = orders.slice(-limit).reverse();
-
-        // Track order view
-        analyticsEvents.push({
-            type: 'admin_orders_viewed',
-            timestamp: new Date().toISOString(),
-            sessionId: req.admin.sessionId
-        });
-
-        res.json({
-            success: true,
-            orders: recentOrders,
-            totalOrders: orders.length
-        });
-
-    } catch (error) {
-        console.error('❌ Orders fetch error:', error);
-        res.status(500).json({
-            success: false,
-            message: 'Failed to fetch orders'
-        });
-    }
-});
-
-app.get('/api/orders/:orderId', (req, res) => {
-    try {
-        const orderId = parseInt(req.params.orderId.replace('WD', ''));
-        const order = orders.find(o => o.id === orderId);
-
-        if (!order) {
-            return res.status(404).json({
-                success: false,
-                message: 'Order not found'
-            });
-        }
-
-        res.json({
-            success: true,
-            order: {
-                id: `WD${order.id.toString().padStart(4, '0')}`,
-                status: order.status,
-                customerName: order.customerName,
-                items: order.items,
-                totalAmount: order.totalAmount,
-                deliveryDate: order.deliveryDate,
-                createdAt: order.createdAt
-            }
-        });
-    } catch (error) {
-        console.error('Get order error:', error);
-        res.status(500).json({
-            success: false,
-            message: 'Failed to retrieve order'
-        });
-    }
-});
-
-// Contact form API
-app.post('/api/contact', async (req, res) => {
-    try {
-        const { name, email, phone, message } = req.body;
-
-        if (!name || !email || !message) {
-            return res.status(400).json({
-                success: false,
-                message: 'Name, email, and message are required'
-            });
-        }
-
-        // Track contact submission
-        analyticsEvents.push({
-            type: 'contact_submit',
-            timestamp: new Date().toISOString(),
-            name: name,
-            email: email
-        });
-
-        if (transporter) {
-            try {
-                const mailOptions = {
-                    from: process.env.EMAIL_USER,
-                    to: process.env.EMAIL_USER,
-                    subject: 'New Contact Form Submission - Warm Delights',
-                    html: `
-                        <h3>New Contact Form Submission</h3>
-                        <p><strong>Name:</strong> ${name}</p>
-                        <p><strong>Email:</strong> ${email}</p>
-                        <p><strong>Phone:</strong> ${phone || 'Not provided'}</p>
-                        <p><strong>Message:</strong></p>
-                        <p>${message}</p>
-                    `
-                };
-                await transporter.sendMail(mailOptions);
-            } catch (emailError) {
-                console.error('Contact email error:', emailError);
-            }
-        }
-
-        res.json({
-            success: true,
-            message: 'Message sent successfully!'
-        });
-    } catch (error) {
-        console.error('Contact form error:', error);
-        res.status(500).json({
-            success: false,
-            message: 'Failed to send message'
-        });
-    }
-});
-
-// Enhanced placeholder image generator with better styling
+// **🖼️ ENHANCED PLACEHOLDER GENERATOR**
 app.get('/api/placeholder/:width/:height', (req, res) => {
     try {
         const { width, height } = req.params;
@@ -1138,9 +1117,66 @@ app.get('/api/placeholder/:width/:height', (req, res) => {
     }
 });
 
-// Global error handler
+// **🏠 ROOT ROUTE WITH GLOBAL STORAGE INFO**
+app.get('/', (req, res) => {
+    const stats = globalStorage.getAnalyticsStats();
+    
+    res.json({
+        status: 'OK',
+        message: 'Warm Delights Global Storage Server',
+        timestamp: new Date().toISOString(),
+        version: '3.0.0',
+        features: [
+            'Global Server Storage', 
+            'Session Cache', 
+            'Universal Image Access', 
+            'Persistent Analytics',
+            'Order Management',
+            'Admin Authentication'
+        ],
+        storage: {
+            totalImages: globalStorage.images.length,
+            publicImages: globalStorage.getPublicImages().length,
+            totalOrders: globalStorage.orders.length,
+            totalEvents: stats.totalEvents,
+            sessionCacheSize: globalStorage.sessionCache.size,
+            activeAdminSessions: globalStorage.adminSessions.size
+        },
+        uploadDir: globalStorage.uploadDir,
+        dataFiles: {
+            gallery: fs.existsSync(globalStorage.dataFile),
+            sessions: fs.existsSync(globalStorage.sessionFile)
+        }
+    });
+});
+
+// **💚 HEALTH CHECK**
+app.get('/health', (req, res) => {
+    res.json({ 
+        status: 'healthy',
+        timestamp: new Date().toISOString(),
+        uptime: process.uptime(),
+        globalStorage: {
+            images: globalStorage.images.length,
+            orders: globalStorage.orders.length,
+            sessions: globalStorage.adminSessions.size,
+            cache: globalStorage.sessionCache.size
+        }
+    });
+});
+
+// **🚨 GLOBAL ERROR HANDLER**
 app.use((error, req, res, next) => {
     console.error('🚨 Global error:', error);
+    
+    // Track error
+    globalStorage.trackEvent('server_error', {
+        error: error.message,
+        stack: error.stack,
+        url: req.url,
+        method: req.method,
+        ip: req.ip
+    });
     
     if (error instanceof multer.MulterError) {
         return res.status(400).json({
@@ -1155,54 +1191,81 @@ app.use((error, req, res, next) => {
     });
 });
 
-// 404 handler
+// **🔍 404 HANDLER**
 app.use('*', (req, res) => {
+    globalStorage.trackEvent('route_not_found', {
+        url: req.originalUrl,
+        method: req.method,
+        ip: req.ip
+    });
+    
     res.status(404).json({ 
         error: 'Route not found',
         message: `The route ${req.originalUrl} does not exist`
     });
 });
 
-// Cleanup expired sessions (every 30 minutes)
+// **🧹 CLEANUP TASKS**
 setInterval(() => {
-    const now = new Date();
-    const expiredSessions = []; 
+    // Clean expired sessions
+    globalStorage.clearExpiredSessions();
     
-    adminSessions.forEach((session, sessionId) => {
+    // Clean expired admin sessions
+    const now = new Date();
+    let expiredAdminSessions = [];
+    
+    globalStorage.adminSessions.forEach((session, sessionId) => {
         const timeDiff = now - new Date(session.loginTime);
         const hoursDiff = timeDiff / (1000 * 60 * 60);
         
         if (hoursDiff > 2) { // 2 hour expiry
-            expiredSessions.push(sessionId);
+            expiredAdminSessions.push(sessionId);
         }
     });
     
-    expiredSessions.forEach(sessionId => {
-        adminSessions.delete(sessionId);
-        console.log(`🗑️ Cleaned up expired session: ${sessionId}`);
+    expiredAdminSessions.forEach(sessionId => {
+        globalStorage.adminSessions.delete(sessionId);
+        console.log(`🗑️ Cleaned up expired admin session: ${sessionId}`);
     });
     
 }, 30 * 60 * 1000); // Every 30 minutes
 
-// Start server
+// **🚀 START SERVER WITH GLOBAL STORAGE**
 const server = app.listen(PORT, '0.0.0.0', () => {
-    console.log(`✅ Warm Delights Backend v2.1.0 running on port ${PORT}`);
-    console.log(`📁 Upload directory: ${uploadDir}`);
-    console.log(`🖼️ Gallery images: ${galleryImages.length}`);
-    console.log(`🔐 Admin authentication enabled`);
-    console.log(`📊 Analytics tracking enabled`);
-    console.log(`📱 Responsive image support enabled`);
-    console.log(`🌍 Universal image access enabled with fallback routes`);
-    console.log(`🚀 Features: Admin Auth, Universal Images, Analytics, Email`);
+    console.log(`✅ Warm Delights Global Storage Server v3.0.0 running on port ${PORT}`);
+    console.log(`🌍 Global storage with ${globalStorage.images.length} images`);
+    console.log(`📊 Analytics events: ${globalStorage.analyticsEvents.length}`);
+    console.log(`🛒 Orders stored: ${globalStorage.orders.length}`);
+    console.log(`🔄 Session cache entries: ${globalStorage.sessionCache.size}`);
+    console.log(`📁 Storage location: ${globalStorage.uploadDir}`);
+    console.log(`💾 Data persistence: ${fs.existsSync(globalStorage.dataFile) ? 'Enabled' : 'Disabled'}`);
+    console.log(`🚀 Features: Global Storage, Session Cache, Universal Access, Analytics`);
 }).on('error', (error) => {
     console.error('Server error:', error);
 });
 
-// Graceful shutdown
+// **🛑 GRACEFUL SHUTDOWN**
 process.on('SIGTERM', () => {
     console.log('Received SIGTERM, shutting down gracefully');
+    
+    // Save all data before shutdown
+    globalStorage.saveGalleryData();
+    globalStorage.saveSessionData();
+    
     server.close(() => {
-        console.log('Process terminated');
+        console.log('Process terminated gracefully');
+    });
+});
+
+process.on('SIGINT', () => {
+    console.log('Received SIGINT, shutting down gracefully');
+    
+    // Save all data before shutdown
+    globalStorage.saveGalleryData();
+    globalStorage.saveSessionData();
+    
+    server.close(() => {
+        console.log('Process terminated gracefully');
     });
 });
 
