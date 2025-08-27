@@ -1,0 +1,1274 @@
+{
+  "images": [],
+  "analytics": [
+    {
+      "id": 1755843756884,
+      "type": "route_not_found",
+      "data": {
+        "url": "/.well-known/appspecific/com.chrome.devtools.json",
+        "method": "GET",
+        "ip": "127.0.0.1"
+      },
+      "timestamp": "2025-08-22T06:22:36.884Z",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": 1755843756892,
+      "type": "route_not_found",
+      "data": {
+        "url": "/favicon.ico",
+        "method": "GET",
+        "ip": "127.0.0.1"
+      },
+      "timestamp": "2025-08-22T06:22:36.892Z",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": 1755843779808,
+      "type": "gallery_viewed",
+      "data": {
+        "ip": "127.0.0.1",
+        "imagesCount": 0,
+        "source": "cache"
+      },
+      "timestamp": "2025-08-22T06:22:59.808Z",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": 1755843779826,
+      "type": "route_not_found",
+      "data": {
+        "url": "/.well-known/appspecific/com.chrome.devtools.json",
+        "method": "GET",
+        "ip": "127.0.0.1"
+      },
+      "timestamp": "2025-08-22T06:22:59.826Z",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": 1755843913607,
+      "type": "page_visit",
+      "data": {
+        "page": "/",
+        "referrer": "http://127.0.0.1:5500/",
+        "timestamp": "2025-08-22T06:25:13.271Z",
+        "ip": "127.0.0.1",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36"
+      },
+      "timestamp": "2025-08-22T06:25:13.607Z",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": 1755843914869,
+      "type": "route_not_found",
+      "data": {
+        "url": "/uploads/1755841593281-81707689-Logo.png",
+        "method": "GET",
+        "ip": "127.0.0.1"
+      },
+      "timestamp": "2025-08-22T06:25:14.869Z",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": 1755843914872,
+      "type": "route_not_found",
+      "data": {
+        "url": "/uploads/1755839653583-862180008-Menu.png",
+        "method": "GET",
+        "ip": "127.0.0.1"
+      },
+      "timestamp": "2025-08-22T06:25:14.872Z",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": 1755843914873,
+      "type": "route_not_found",
+      "data": {
+        "url": "/uploads/1755838549335-52123840-Soft_tones__Sweet_flavors__Forever_love____In_frame___Strawberry___Blueberry_Semi_Fondant_Wedding_.jpg",
+        "method": "GET",
+        "ip": "127.0.0.1"
+      },
+      "timestamp": "2025-08-22T06:25:14.873Z",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": 1755843914874,
+      "type": "route_not_found",
+      "data": {
+        "url": "/uploads/1755838549165-800140591-Delightfully_different__lovingly_handmade_____Raksha_Bandhan_hampers_now_available______________Special_di__2_.jpg",
+        "method": "GET",
+        "ip": "127.0.0.1"
+      },
+      "timestamp": "2025-08-22T06:25:14.874Z",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": 1755843915627,
+      "type": "route_not_found",
+      "data": {
+        "url": "/api/uploads/1755838549335-52123840-Soft_tones__Sweet_flavors__Forever_love____In_frame___Strawberry___Blueberry_Semi_Fondant_Wedding_.jpg",
+        "method": "GET",
+        "ip": "127.0.0.1"
+      },
+      "timestamp": "2025-08-22T06:25:15.627Z",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": 1755843915635,
+      "type": "route_not_found",
+      "data": {
+        "url": "/api/uploads/1755838549165-800140591-Delightfully_different__lovingly_handmade_____Raksha_Bandhan_hampers_now_available______________Special_di__2_.jpg",
+        "method": "GET",
+        "ip": "127.0.0.1"
+      },
+      "timestamp": "2025-08-22T06:25:15.635Z",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": 1755843915686,
+      "type": "route_not_found",
+      "data": {
+        "url": "/api/uploads/1755839653583-862180008-Menu.png",
+        "method": "GET",
+        "ip": "127.0.0.1"
+      },
+      "timestamp": "2025-08-22T06:25:15.686Z",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": 1755843915687,
+      "type": "route_not_found",
+      "data": {
+        "url": "/images/1755838549335-52123840-Soft_tones__Sweet_flavors__Forever_love____In_frame___Strawberry___Blueberry_Semi_Fondant_Wedding_.jpg",
+        "method": "GET",
+        "ip": "127.0.0.1"
+      },
+      "timestamp": "2025-08-22T06:25:15.687Z",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": 1755843915689,
+      "type": "route_not_found",
+      "data": {
+        "url": "/images/1755838549165-800140591-Delightfully_different__lovingly_handmade_____Raksha_Bandhan_hampers_now_available______________Special_di__2_.jpg",
+        "method": "GET",
+        "ip": "127.0.0.1"
+      },
+      "timestamp": "2025-08-22T06:25:15.689Z",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": 1755843915690,
+      "type": "route_not_found",
+      "data": {
+        "url": "/uploads/1755838548990-717063674-Fluffy__flavourful__and_fabulous_In_frame___Vanilla_Cupcakes_________cake__cupcakes__vanillacupcakes.jpg",
+        "method": "GET",
+        "ip": "127.0.0.1"
+      },
+      "timestamp": "2025-08-22T06:25:15.690Z",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": 1755843916002,
+      "type": "route_not_found",
+      "data": {
+        "url": "/images/1755839653583-862180008-Menu.png",
+        "method": "GET",
+        "ip": "127.0.0.1"
+      },
+      "timestamp": "2025-08-22T06:25:16.002Z",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": 1755843916006,
+      "type": "route_not_found",
+      "data": {
+        "url": "/api/uploads/1755838548990-717063674-Fluffy__flavourful__and_fabulous_In_frame___Vanilla_Cupcakes_________cake__cupcakes__vanillacupcakes.jpg",
+        "method": "GET",
+        "ip": "127.0.0.1"
+      },
+      "timestamp": "2025-08-22T06:25:16.006Z",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": 1755843916007,
+      "type": "route_not_found",
+      "data": {
+        "url": "/uploads/1755838548643-113893787-Delightfully_different__lovingly_handmade_____Raksha_Bandhan_hampers_now_available______________Special_di__4_.jpg",
+        "method": "GET",
+        "ip": "127.0.0.1"
+      },
+      "timestamp": "2025-08-22T06:25:16.007Z",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": 1755843916008,
+      "type": "route_not_found",
+      "data": {
+        "url": "/uploads/1755838548470-781311831-Delightfully_different__lovingly_handmade_____Raksha_Bandhan_hampers_now_available______________Special_di__3_.jpg",
+        "method": "GET",
+        "ip": "127.0.0.1"
+      },
+      "timestamp": "2025-08-22T06:25:16.008Z",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": 1755843916477,
+      "type": "route_not_found",
+      "data": {
+        "url": "/uploads/1755838548289-512197842-Delightfully_different__lovingly_handmade_____Raksha_Bandhan_hampers_now_available______________Special_di__1_.jpg",
+        "method": "GET",
+        "ip": "127.0.0.1"
+      },
+      "timestamp": "2025-08-22T06:25:16.477Z",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": 1755843916483,
+      "type": "route_not_found",
+      "data": {
+        "url": "/uploads/1755838425465-556960050-Delightfully_different__lovingly_handmade_____Raksha_Bandhan_hampers_now_available______________Special_di.jpg",
+        "method": "GET",
+        "ip": "127.0.0.1"
+      },
+      "timestamp": "2025-08-22T06:25:16.483Z",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": 1755843916827,
+      "type": "route_not_found",
+      "data": {
+        "url": "/api/uploads/1755838548470-781311831-Delightfully_different__lovingly_handmade_____Raksha_Bandhan_hampers_now_available______________Special_di__3_.jpg",
+        "method": "GET",
+        "ip": "127.0.0.1"
+      },
+      "timestamp": "2025-08-22T06:25:16.827Z",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": 1755843916832,
+      "type": "route_not_found",
+      "data": {
+        "url": "/images/1755838548990-717063674-Fluffy__flavourful__and_fabulous_In_frame___Vanilla_Cupcakes_________cake__cupcakes__vanillacupcakes.jpg",
+        "method": "GET",
+        "ip": "127.0.0.1"
+      },
+      "timestamp": "2025-08-22T06:25:16.832Z",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": 1755843916832,
+      "type": "route_not_found",
+      "data": {
+        "url": "/api/uploads/1755838548643-113893787-Delightfully_different__lovingly_handmade_____Raksha_Bandhan_hampers_now_available______________Special_di__4_.jpg",
+        "method": "GET",
+        "ip": "127.0.0.1"
+      },
+      "timestamp": "2025-08-22T06:25:16.832Z",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": 1755843916833,
+      "type": "route_not_found",
+      "data": {
+        "url": "/api/uploads/1755841593281-81707689-Logo.png",
+        "method": "GET",
+        "ip": "127.0.0.1"
+      },
+      "timestamp": "2025-08-22T06:25:16.833Z",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": 1755843917293,
+      "type": "route_not_found",
+      "data": {
+        "url": "/api/uploads/1755838548289-512197842-Delightfully_different__lovingly_handmade_____Raksha_Bandhan_hampers_now_available______________Special_di__1_.jpg",
+        "method": "GET",
+        "ip": "127.0.0.1"
+      },
+      "timestamp": "2025-08-22T06:25:17.293Z",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": 1755843917306,
+      "type": "route_not_found",
+      "data": {
+        "url": "/api/uploads/1755838425465-556960050-Delightfully_different__lovingly_handmade_____Raksha_Bandhan_hampers_now_available______________Special_di.jpg",
+        "method": "GET",
+        "ip": "127.0.0.1"
+      },
+      "timestamp": "2025-08-22T06:25:17.306Z",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": 1755843917670,
+      "type": "route_not_found",
+      "data": {
+        "url": "/images/1755838548643-113893787-Delightfully_different__lovingly_handmade_____Raksha_Bandhan_hampers_now_available______________Special_di__4_.jpg",
+        "method": "GET",
+        "ip": "127.0.0.1"
+      },
+      "timestamp": "2025-08-22T06:25:17.670Z",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": 1755843917673,
+      "type": "route_not_found",
+      "data": {
+        "url": "/images/1755838548470-781311831-Delightfully_different__lovingly_handmade_____Raksha_Bandhan_hampers_now_available______________Special_di__3_.jpg",
+        "method": "GET",
+        "ip": "127.0.0.1"
+      },
+      "timestamp": "2025-08-22T06:25:17.673Z",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": 1755843917675,
+      "type": "route_not_found",
+      "data": {
+        "url": "/images/1755841593281-81707689-Logo.png",
+        "method": "GET",
+        "ip": "127.0.0.1"
+      },
+      "timestamp": "2025-08-22T06:25:17.675Z",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": 1755843918125,
+      "type": "route_not_found",
+      "data": {
+        "url": "/images/1755838548289-512197842-Delightfully_different__lovingly_handmade_____Raksha_Bandhan_hampers_now_available______________Special_di__1_.jpg",
+        "method": "GET",
+        "ip": "127.0.0.1"
+      },
+      "timestamp": "2025-08-22T06:25:18.125Z",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": 1755843918131,
+      "type": "route_not_found",
+      "data": {
+        "url": "/images/1755838425465-556960050-Delightfully_different__lovingly_handmade_____Raksha_Bandhan_hampers_now_available______________Special_di.jpg",
+        "method": "GET",
+        "ip": "127.0.0.1"
+      },
+      "timestamp": "2025-08-22T06:25:18.131Z",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": 1755844099889,
+      "type": "route_not_found",
+      "data": {
+        "url": "/uploads/1755841593281-81707689-Logo.png",
+        "method": "GET",
+        "ip": "127.0.0.1"
+      },
+      "timestamp": "2025-08-22T06:28:19.889Z",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": 1755844099894,
+      "type": "route_not_found",
+      "data": {
+        "url": "/uploads/1755839653583-862180008-Menu.png",
+        "method": "GET",
+        "ip": "127.0.0.1"
+      },
+      "timestamp": "2025-08-22T06:28:19.894Z",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": 1755844099895,
+      "type": "route_not_found",
+      "data": {
+        "url": "/uploads/1755838549335-52123840-Soft_tones__Sweet_flavors__Forever_love____In_frame___Strawberry___Blueberry_Semi_Fondant_Wedding_.jpg",
+        "method": "GET",
+        "ip": "127.0.0.1"
+      },
+      "timestamp": "2025-08-22T06:28:19.895Z",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": 1755844100644,
+      "type": "route_not_found",
+      "data": {
+        "url": "/uploads/1755838549165-800140591-Delightfully_different__lovingly_handmade_____Raksha_Bandhan_hampers_now_available______________Special_di__2_.jpg",
+        "method": "GET",
+        "ip": "127.0.0.1"
+      },
+      "timestamp": "2025-08-22T06:28:20.644Z",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": 1755844100723,
+      "type": "route_not_found",
+      "data": {
+        "url": "/uploads/1755838548990-717063674-Fluffy__flavourful__and_fabulous_In_frame___Vanilla_Cupcakes_________cake__cupcakes__vanillacupcakes.jpg",
+        "method": "GET",
+        "ip": "127.0.0.1"
+      },
+      "timestamp": "2025-08-22T06:28:20.723Z",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": 1755844100724,
+      "type": "route_not_found",
+      "data": {
+        "url": "/uploads/1755838548643-113893787-Delightfully_different__lovingly_handmade_____Raksha_Bandhan_hampers_now_available______________Special_di__4_.jpg",
+        "method": "GET",
+        "ip": "127.0.0.1"
+      },
+      "timestamp": "2025-08-22T06:28:20.724Z",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": 1755844100725,
+      "type": "route_not_found",
+      "data": {
+        "url": "/uploads/1755838548470-781311831-Delightfully_different__lovingly_handmade_____Raksha_Bandhan_hampers_now_available______________Special_di__3_.jpg",
+        "method": "GET",
+        "ip": "127.0.0.1"
+      },
+      "timestamp": "2025-08-22T06:28:20.725Z",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": 1755844100960,
+      "type": "route_not_found",
+      "data": {
+        "url": "/uploads/1755838548289-512197842-Delightfully_different__lovingly_handmade_____Raksha_Bandhan_hampers_now_available______________Special_di__1_.jpg",
+        "method": "GET",
+        "ip": "127.0.0.1"
+      },
+      "timestamp": "2025-08-22T06:28:20.960Z",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": 1755844101045,
+      "type": "route_not_found",
+      "data": {
+        "url": "/uploads/1755838425465-556960050-Delightfully_different__lovingly_handmade_____Raksha_Bandhan_hampers_now_available______________Special_di.jpg",
+        "method": "GET",
+        "ip": "127.0.0.1"
+      },
+      "timestamp": "2025-08-22T06:28:21.045Z",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": 1755844101046,
+      "type": "route_not_found",
+      "data": {
+        "url": "/api/uploads/1755841593281-81707689-Logo.png",
+        "method": "GET",
+        "ip": "127.0.0.1"
+      },
+      "timestamp": "2025-08-22T06:28:21.046Z",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": 1755844101047,
+      "type": "route_not_found",
+      "data": {
+        "url": "/api/uploads/1755839653583-862180008-Menu.png",
+        "method": "GET",
+        "ip": "127.0.0.1"
+      },
+      "timestamp": "2025-08-22T06:28:21.047Z",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": 1755844101279,
+      "type": "route_not_found",
+      "data": {
+        "url": "/api/uploads/1755838549335-52123840-Soft_tones__Sweet_flavors__Forever_love____In_frame___Strawberry___Blueberry_Semi_Fondant_Wedding_.jpg",
+        "method": "GET",
+        "ip": "127.0.0.1"
+      },
+      "timestamp": "2025-08-22T06:28:21.279Z",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": 1755844101358,
+      "type": "route_not_found",
+      "data": {
+        "url": "/api/uploads/1755838549165-800140591-Delightfully_different__lovingly_handmade_____Raksha_Bandhan_hampers_now_available______________Special_di__2_.jpg",
+        "method": "GET",
+        "ip": "127.0.0.1"
+      },
+      "timestamp": "2025-08-22T06:28:21.358Z",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": 1755844101359,
+      "type": "route_not_found",
+      "data": {
+        "url": "/api/uploads/1755838548990-717063674-Fluffy__flavourful__and_fabulous_In_frame___Vanilla_Cupcakes_________cake__cupcakes__vanillacupcakes.jpg",
+        "method": "GET",
+        "ip": "127.0.0.1"
+      },
+      "timestamp": "2025-08-22T06:28:21.359Z",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": 1755844101360,
+      "type": "route_not_found",
+      "data": {
+        "url": "/api/uploads/1755838548643-113893787-Delightfully_different__lovingly_handmade_____Raksha_Bandhan_hampers_now_available______________Special_di__4_.jpg",
+        "method": "GET",
+        "ip": "127.0.0.1"
+      },
+      "timestamp": "2025-08-22T06:28:21.360Z",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": 1755844101687,
+      "type": "route_not_found",
+      "data": {
+        "url": "/api/uploads/1755838548470-781311831-Delightfully_different__lovingly_handmade_____Raksha_Bandhan_hampers_now_available______________Special_di__3_.jpg",
+        "method": "GET",
+        "ip": "127.0.0.1"
+      },
+      "timestamp": "2025-08-22T06:28:21.687Z",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": 1755844101692,
+      "type": "route_not_found",
+      "data": {
+        "url": "/api/uploads/1755838548289-512197842-Delightfully_different__lovingly_handmade_____Raksha_Bandhan_hampers_now_available______________Special_di__1_.jpg",
+        "method": "GET",
+        "ip": "127.0.0.1"
+      },
+      "timestamp": "2025-08-22T06:28:21.692Z",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": 1755844101693,
+      "type": "route_not_found",
+      "data": {
+        "url": "/api/uploads/1755838425465-556960050-Delightfully_different__lovingly_handmade_____Raksha_Bandhan_hampers_now_available______________Special_di.jpg",
+        "method": "GET",
+        "ip": "127.0.0.1"
+      },
+      "timestamp": "2025-08-22T06:28:21.693Z",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": 1755844102024,
+      "type": "route_not_found",
+      "data": {
+        "url": "/images/1755841593281-81707689-Logo.png",
+        "method": "GET",
+        "ip": "127.0.0.1"
+      },
+      "timestamp": "2025-08-22T06:28:22.024Z",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": 1755844102027,
+      "type": "route_not_found",
+      "data": {
+        "url": "/images/1755839653583-862180008-Menu.png",
+        "method": "GET",
+        "ip": "127.0.0.1"
+      },
+      "timestamp": "2025-08-22T06:28:22.027Z",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": 1755844102089,
+      "type": "route_not_found",
+      "data": {
+        "url": "/images/1755838549335-52123840-Soft_tones__Sweet_flavors__Forever_love____In_frame___Strawberry___Blueberry_Semi_Fondant_Wedding_.jpg",
+        "method": "GET",
+        "ip": "127.0.0.1"
+      },
+      "timestamp": "2025-08-22T06:28:22.089Z",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": 1755844102403,
+      "type": "route_not_found",
+      "data": {
+        "url": "/images/1755838549165-800140591-Delightfully_different__lovingly_handmade_____Raksha_Bandhan_hampers_now_available______________Special_di__2_.jpg",
+        "method": "GET",
+        "ip": "127.0.0.1"
+      },
+      "timestamp": "2025-08-22T06:28:22.403Z",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": 1755844102498,
+      "type": "route_not_found",
+      "data": {
+        "url": "/images/1755838548990-717063674-Fluffy__flavourful__and_fabulous_In_frame___Vanilla_Cupcakes_________cake__cupcakes__vanillacupcakes.jpg",
+        "method": "GET",
+        "ip": "127.0.0.1"
+      },
+      "timestamp": "2025-08-22T06:28:22.498Z",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": 1755844102820,
+      "type": "route_not_found",
+      "data": {
+        "url": "/images/1755838548643-113893787-Delightfully_different__lovingly_handmade_____Raksha_Bandhan_hampers_now_available______________Special_di__4_.jpg",
+        "method": "GET",
+        "ip": "127.0.0.1"
+      },
+      "timestamp": "2025-08-22T06:28:22.820Z",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": 1755844102833,
+      "type": "route_not_found",
+      "data": {
+        "url": "/images/1755838548470-781311831-Delightfully_different__lovingly_handmade_____Raksha_Bandhan_hampers_now_available______________Special_di__3_.jpg",
+        "method": "GET",
+        "ip": "127.0.0.1"
+      },
+      "timestamp": "2025-08-22T06:28:22.833Z",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": 1755844102848,
+      "type": "route_not_found",
+      "data": {
+        "url": "/images/1755838548289-512197842-Delightfully_different__lovingly_handmade_____Raksha_Bandhan_hampers_now_available______________Special_di__1_.jpg",
+        "method": "GET",
+        "ip": "127.0.0.1"
+      },
+      "timestamp": "2025-08-22T06:28:22.848Z",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": 1755844103231,
+      "type": "route_not_found",
+      "data": {
+        "url": "/images/1755838425465-556960050-Delightfully_different__lovingly_handmade_____Raksha_Bandhan_hampers_now_available______________Special_di.jpg",
+        "method": "GET",
+        "ip": "127.0.0.1"
+      },
+      "timestamp": "2025-08-22T06:28:23.231Z",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": 1755844107165,
+      "type": "page_visit",
+      "data": {
+        "page": "/",
+        "referrer": "http://127.0.0.1:5500/",
+        "timestamp": "2025-08-22T06:28:26.851Z",
+        "ip": "127.0.0.1",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36"
+      },
+      "timestamp": "2025-08-22T06:28:27.165Z",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": 1755844112560,
+      "type": "page_visit",
+      "data": {
+        "page": "/",
+        "referrer": "http://127.0.0.1:5500/",
+        "timestamp": "2025-08-22T06:28:32.549Z",
+        "ip": "127.0.0.1",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36"
+      },
+      "timestamp": "2025-08-22T06:28:32.560Z",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": 1755844112700,
+      "type": "route_not_found",
+      "data": {
+        "url": "/uploads/1755838548470-781311831-Delightfully_different__lovingly_handmade_____Raksha_Bandhan_hampers_now_available______________Special_di__3_.jpg",
+        "method": "GET",
+        "ip": "127.0.0.1"
+      },
+      "timestamp": "2025-08-22T06:28:32.700Z",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": 1755844112701,
+      "type": "route_not_found",
+      "data": {
+        "url": "/uploads/1755838548289-512197842-Delightfully_different__lovingly_handmade_____Raksha_Bandhan_hampers_now_available______________Special_di__1_.jpg",
+        "method": "GET",
+        "ip": "127.0.0.1"
+      },
+      "timestamp": "2025-08-22T06:28:32.701Z",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": 1755844113034,
+      "type": "route_not_found",
+      "data": {
+        "url": "/uploads/1755838549165-800140591-Delightfully_different__lovingly_handmade_____Raksha_Bandhan_hampers_now_available______________Special_di__2_.jpg",
+        "method": "GET",
+        "ip": "127.0.0.1"
+      },
+      "timestamp": "2025-08-22T06:28:33.034Z",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": 1755844113038,
+      "type": "route_not_found",
+      "data": {
+        "url": "/uploads/1755838548990-717063674-Fluffy__flavourful__and_fabulous_In_frame___Vanilla_Cupcakes_________cake__cupcakes__vanillacupcakes.jpg",
+        "method": "GET",
+        "ip": "127.0.0.1"
+      },
+      "timestamp": "2025-08-22T06:28:33.038Z",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": 1755844113039,
+      "type": "route_not_found",
+      "data": {
+        "url": "/uploads/1755838548643-113893787-Delightfully_different__lovingly_handmade_____Raksha_Bandhan_hampers_now_available______________Special_di__4_.jpg",
+        "method": "GET",
+        "ip": "127.0.0.1"
+      },
+      "timestamp": "2025-08-22T06:28:33.039Z",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": 1755844113040,
+      "type": "route_not_found",
+      "data": {
+        "url": "/api/uploads/1755841593281-81707689-Logo.png",
+        "method": "GET",
+        "ip": "127.0.0.1"
+      },
+      "timestamp": "2025-08-22T06:28:33.040Z",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": 1755844113041,
+      "type": "route_not_found",
+      "data": {
+        "url": "/api/uploads/1755838549335-52123840-Soft_tones__Sweet_flavors__Forever_love____In_frame___Strawberry___Blueberry_Semi_Fondant_Wedding_.jpg",
+        "method": "GET",
+        "ip": "127.0.0.1"
+      },
+      "timestamp": "2025-08-22T06:28:33.041Z",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": 1755844113042,
+      "type": "route_not_found",
+      "data": {
+        "url": "/api/uploads/1755838425465-556960050-Delightfully_different__lovingly_handmade_____Raksha_Bandhan_hampers_now_available______________Special_di.jpg",
+        "method": "GET",
+        "ip": "127.0.0.1"
+      },
+      "timestamp": "2025-08-22T06:28:33.042Z",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": 1755844113886,
+      "type": "route_not_found",
+      "data": {
+        "url": "/images/1755838549335-52123840-Soft_tones__Sweet_flavors__Forever_love____In_frame___Strawberry___Blueberry_Semi_Fondant_Wedding_.jpg",
+        "method": "GET",
+        "ip": "127.0.0.1"
+      },
+      "timestamp": "2025-08-22T06:28:33.886Z",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": 1755844113889,
+      "type": "route_not_found",
+      "data": {
+        "url": "/images/1755838425465-556960050-Delightfully_different__lovingly_handmade_____Raksha_Bandhan_hampers_now_available______________Special_di.jpg",
+        "method": "GET",
+        "ip": "127.0.0.1"
+      },
+      "timestamp": "2025-08-22T06:28:33.889Z",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": 1755844113890,
+      "type": "route_not_found",
+      "data": {
+        "url": "/images/1755841593281-81707689-Logo.png",
+        "method": "GET",
+        "ip": "127.0.0.1"
+      },
+      "timestamp": "2025-08-22T06:28:33.890Z",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": 1755844113894,
+      "type": "route_not_found",
+      "data": {
+        "url": "/api/uploads/1755838548470-781311831-Delightfully_different__lovingly_handmade_____Raksha_Bandhan_hampers_now_available______________Special_di__3_.jpg",
+        "method": "GET",
+        "ip": "127.0.0.1"
+      },
+      "timestamp": "2025-08-22T06:28:33.894Z",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": 1755844113895,
+      "type": "route_not_found",
+      "data": {
+        "url": "/api/uploads/1755839653583-862180008-Menu.png",
+        "method": "GET",
+        "ip": "127.0.0.1"
+      },
+      "timestamp": "2025-08-22T06:28:33.896Z",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": 1755844113897,
+      "type": "route_not_found",
+      "data": {
+        "url": "/api/uploads/1755838548289-512197842-Delightfully_different__lovingly_handmade_____Raksha_Bandhan_hampers_now_available______________Special_di__1_.jpg",
+        "method": "GET",
+        "ip": "127.0.0.1"
+      },
+      "timestamp": "2025-08-22T06:28:33.897Z",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": 1755844114709,
+      "type": "route_not_found",
+      "data": {
+        "url": "/api/uploads/1755838549165-800140591-Delightfully_different__lovingly_handmade_____Raksha_Bandhan_hampers_now_available______________Special_di__2_.jpg",
+        "method": "GET",
+        "ip": "127.0.0.1"
+      },
+      "timestamp": "2025-08-22T06:28:34.709Z",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": 1755844114713,
+      "type": "route_not_found",
+      "data": {
+        "url": "/api/uploads/1755838548990-717063674-Fluffy__flavourful__and_fabulous_In_frame___Vanilla_Cupcakes_________cake__cupcakes__vanillacupcakes.jpg",
+        "method": "GET",
+        "ip": "127.0.0.1"
+      },
+      "timestamp": "2025-08-22T06:28:34.713Z",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": 1755844114717,
+      "type": "route_not_found",
+      "data": {
+        "url": "/images/1755838548470-781311831-Delightfully_different__lovingly_handmade_____Raksha_Bandhan_hampers_now_available______________Special_di__3_.jpg",
+        "method": "GET",
+        "ip": "127.0.0.1"
+      },
+      "timestamp": "2025-08-22T06:28:34.717Z",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": 1755844114718,
+      "type": "route_not_found",
+      "data": {
+        "url": "/api/uploads/1755838548643-113893787-Delightfully_different__lovingly_handmade_____Raksha_Bandhan_hampers_now_available______________Special_di__4_.jpg",
+        "method": "GET",
+        "ip": "127.0.0.1"
+      },
+      "timestamp": "2025-08-22T06:28:34.718Z",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": 1755844114719,
+      "type": "route_not_found",
+      "data": {
+        "url": "/images/1755839653583-862180008-Menu.png",
+        "method": "GET",
+        "ip": "127.0.0.1"
+      },
+      "timestamp": "2025-08-22T06:28:34.719Z",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": 1755844114723,
+      "type": "route_not_found",
+      "data": {
+        "url": "/images/1755838548289-512197842-Delightfully_different__lovingly_handmade_____Raksha_Bandhan_hampers_now_available______________Special_di__1_.jpg",
+        "method": "GET",
+        "ip": "127.0.0.1"
+      },
+      "timestamp": "2025-08-22T06:28:34.723Z",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": 1755844115534,
+      "type": "route_not_found",
+      "data": {
+        "url": "/images/1755838548643-113893787-Delightfully_different__lovingly_handmade_____Raksha_Bandhan_hampers_now_available______________Special_di__4_.jpg",
+        "method": "GET",
+        "ip": "127.0.0.1"
+      },
+      "timestamp": "2025-08-22T06:28:35.534Z",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": 1755844115537,
+      "type": "route_not_found",
+      "data": {
+        "url": "/images/1755838549165-800140591-Delightfully_different__lovingly_handmade_____Raksha_Bandhan_hampers_now_available______________Special_di__2_.jpg",
+        "method": "GET",
+        "ip": "127.0.0.1"
+      },
+      "timestamp": "2025-08-22T06:28:35.537Z",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": 1755844115538,
+      "type": "route_not_found",
+      "data": {
+        "url": "/images/1755838548990-717063674-Fluffy__flavourful__and_fabulous_In_frame___Vanilla_Cupcakes_________cake__cupcakes__vanillacupcakes.jpg",
+        "method": "GET",
+        "ip": "127.0.0.1"
+      },
+      "timestamp": "2025-08-22T06:28:35.538Z",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": 1755844133761,
+      "type": "route_not_found",
+      "data": {
+        "url": "/uploads/1755841593281-81707689-Logo.png",
+        "method": "GET",
+        "ip": "127.0.0.1"
+      },
+      "timestamp": "2025-08-22T06:28:53.761Z",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": 1755844133765,
+      "type": "route_not_found",
+      "data": {
+        "url": "/uploads/1755839653583-862180008-Menu.png",
+        "method": "GET",
+        "ip": "127.0.0.1"
+      },
+      "timestamp": "2025-08-22T06:28:53.765Z",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": 1755844133766,
+      "type": "route_not_found",
+      "data": {
+        "url": "/uploads/1755838549335-52123840-Soft_tones__Sweet_flavors__Forever_love____In_frame___Strawberry___Blueberry_Semi_Fondant_Wedding_.jpg",
+        "method": "GET",
+        "ip": "127.0.0.1"
+      },
+      "timestamp": "2025-08-22T06:28:53.766Z",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": 1755844134516,
+      "type": "route_not_found",
+      "data": {
+        "url": "/uploads/1755838549165-800140591-Delightfully_different__lovingly_handmade_____Raksha_Bandhan_hampers_now_available______________Special_di__2_.jpg",
+        "method": "GET",
+        "ip": "127.0.0.1"
+      },
+      "timestamp": "2025-08-22T06:28:54.516Z",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": 1755844134576,
+      "type": "route_not_found",
+      "data": {
+        "url": "/uploads/1755838548990-717063674-Fluffy__flavourful__and_fabulous_In_frame___Vanilla_Cupcakes_________cake__cupcakes__vanillacupcakes.jpg",
+        "method": "GET",
+        "ip": "127.0.0.1"
+      },
+      "timestamp": "2025-08-22T06:28:54.576Z",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": 1755844134577,
+      "type": "route_not_found",
+      "data": {
+        "url": "/uploads/1755838548643-113893787-Delightfully_different__lovingly_handmade_____Raksha_Bandhan_hampers_now_available______________Special_di__4_.jpg",
+        "method": "GET",
+        "ip": "127.0.0.1"
+      },
+      "timestamp": "2025-08-22T06:28:54.577Z",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": 1755844134578,
+      "type": "route_not_found",
+      "data": {
+        "url": "/uploads/1755838548470-781311831-Delightfully_different__lovingly_handmade_____Raksha_Bandhan_hampers_now_available______________Special_di__3_.jpg",
+        "method": "GET",
+        "ip": "127.0.0.1"
+      },
+      "timestamp": "2025-08-22T06:28:54.578Z",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": 1755844134893,
+      "type": "route_not_found",
+      "data": {
+        "url": "/api/uploads/1755838548990-717063674-Fluffy__flavourful__and_fabulous_In_frame___Vanilla_Cupcakes_________cake__cupcakes__vanillacupcakes.jpg",
+        "method": "GET",
+        "ip": "127.0.0.1"
+      },
+      "timestamp": "2025-08-22T06:28:54.893Z",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": 1755844134896,
+      "type": "route_not_found",
+      "data": {
+        "url": "/api/uploads/1755838548643-113893787-Delightfully_different__lovingly_handmade_____Raksha_Bandhan_hampers_now_available______________Special_di__4_.jpg",
+        "method": "GET",
+        "ip": "127.0.0.1"
+      },
+      "timestamp": "2025-08-22T06:28:54.896Z",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": 1755844135021,
+      "type": "route_not_found",
+      "data": {
+        "url": "/api/uploads/1755838548470-781311831-Delightfully_different__lovingly_handmade_____Raksha_Bandhan_hampers_now_available______________Special_di__3_.jpg",
+        "method": "GET",
+        "ip": "127.0.0.1"
+      },
+      "timestamp": "2025-08-22T06:28:55.021Z",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": 1755844135021,
+      "type": "route_not_found",
+      "data": {
+        "url": "/images/1755838548643-113893787-Delightfully_different__lovingly_handmade_____Raksha_Bandhan_hampers_now_available______________Special_di__4_.jpg",
+        "method": "GET",
+        "ip": "127.0.0.1"
+      },
+      "timestamp": "2025-08-22T06:28:55.021Z",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": 1755844135329,
+      "type": "route_not_found",
+      "data": {
+        "url": "/images/1755838548990-717063674-Fluffy__flavourful__and_fabulous_In_frame___Vanilla_Cupcakes_________cake__cupcakes__vanillacupcakes.jpg",
+        "method": "GET",
+        "ip": "127.0.0.1"
+      },
+      "timestamp": "2025-08-22T06:28:55.329Z",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": 1755844135333,
+      "type": "route_not_found",
+      "data": {
+        "url": "/uploads/1755838548289-512197842-Delightfully_different__lovingly_handmade_____Raksha_Bandhan_hampers_now_available______________Special_di__1_.jpg",
+        "method": "GET",
+        "ip": "127.0.0.1"
+      },
+      "timestamp": "2025-08-22T06:28:55.333Z",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": 1755844135347,
+      "type": "route_not_found",
+      "data": {
+        "url": "/uploads/1755838425465-556960050-Delightfully_different__lovingly_handmade_____Raksha_Bandhan_hampers_now_available______________Special_di.jpg",
+        "method": "GET",
+        "ip": "127.0.0.1"
+      },
+      "timestamp": "2025-08-22T06:28:55.347Z",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": 1755844135394,
+      "type": "route_not_found",
+      "data": {
+        "url": "/api/uploads/1755841593281-81707689-Logo.png",
+        "method": "GET",
+        "ip": "127.0.0.1"
+      },
+      "timestamp": "2025-08-22T06:28:55.394Z",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": 1755844135703,
+      "type": "route_not_found",
+      "data": {
+        "url": "/images/1755841593281-81707689-Logo.png",
+        "method": "GET",
+        "ip": "127.0.0.1"
+      },
+      "timestamp": "2025-08-22T06:28:55.703Z",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": 1755844135715,
+      "type": "route_not_found",
+      "data": {
+        "url": "/api/uploads/1755839653583-862180008-Menu.png",
+        "method": "GET",
+        "ip": "127.0.0.1"
+      },
+      "timestamp": "2025-08-22T06:28:55.715Z",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": 1755844135716,
+      "type": "route_not_found",
+      "data": {
+        "url": "/api/uploads/1755838549335-52123840-Soft_tones__Sweet_flavors__Forever_love____In_frame___Strawberry___Blueberry_Semi_Fondant_Wedding_.jpg",
+        "method": "GET",
+        "ip": "127.0.0.1"
+      },
+      "timestamp": "2025-08-22T06:28:55.716Z",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": 1755844136156,
+      "type": "route_not_found",
+      "data": {
+        "url": "/api/uploads/1755838549165-800140591-Delightfully_different__lovingly_handmade_____Raksha_Bandhan_hampers_now_available______________Special_di__2_.jpg",
+        "method": "GET",
+        "ip": "127.0.0.1"
+      },
+      "timestamp": "2025-08-22T06:28:56.156Z",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": 1755844136177,
+      "type": "route_not_found",
+      "data": {
+        "url": "/images/1755838548470-781311831-Delightfully_different__lovingly_handmade_____Raksha_Bandhan_hampers_now_available______________Special_di__3_.jpg",
+        "method": "GET",
+        "ip": "127.0.0.1"
+      },
+      "timestamp": "2025-08-22T06:28:56.177Z",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": 1755844136178,
+      "type": "route_not_found",
+      "data": {
+        "url": "/api/uploads/1755838548289-512197842-Delightfully_different__lovingly_handmade_____Raksha_Bandhan_hampers_now_available______________Special_di__1_.jpg",
+        "method": "GET",
+        "ip": "127.0.0.1"
+      },
+      "timestamp": "2025-08-22T06:28:56.178Z",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": 1755844136547,
+      "type": "route_not_found",
+      "data": {
+        "url": "/api/uploads/1755838425465-556960050-Delightfully_different__lovingly_handmade_____Raksha_Bandhan_hampers_now_available______________Special_di.jpg",
+        "method": "GET",
+        "ip": "127.0.0.1"
+      },
+      "timestamp": "2025-08-22T06:28:56.547Z",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": 1755844136550,
+      "type": "route_not_found",
+      "data": {
+        "url": "/images/1755839653583-862180008-Menu.png",
+        "method": "GET",
+        "ip": "127.0.0.1"
+      },
+      "timestamp": "2025-08-22T06:28:56.550Z",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": 1755844136552,
+      "type": "route_not_found",
+      "data": {
+        "url": "/images/1755838549335-52123840-Soft_tones__Sweet_flavors__Forever_love____In_frame___Strawberry___Blueberry_Semi_Fondant_Wedding_.jpg",
+        "method": "GET",
+        "ip": "127.0.0.1"
+      },
+      "timestamp": "2025-08-22T06:28:56.552Z",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": 1755844136864,
+      "type": "route_not_found",
+      "data": {
+        "url": "/images/1755838549165-800140591-Delightfully_different__lovingly_handmade_____Raksha_Bandhan_hampers_now_available______________Special_di__2_.jpg",
+        "method": "GET",
+        "ip": "127.0.0.1"
+      },
+      "timestamp": "2025-08-22T06:28:56.864Z",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": 1755844136982,
+      "type": "page_visit",
+      "data": {
+        "page": "/",
+        "referrer": "http://127.0.0.1:5500/",
+        "timestamp": "2025-08-22T06:28:56.167Z",
+        "ip": "127.0.0.1",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36"
+      },
+      "timestamp": "2025-08-22T06:28:56.982Z",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": 1755844394983,
+      "type": "gallery_viewed",
+      "data": {
+        "ip": "127.0.0.1",
+        "imagesCount": 0,
+        "source": "cache"
+      },
+      "timestamp": "2025-08-22T06:33:14.983Z",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": 1755844895276,
+      "type": "navigation_clicked",
+      "data": {
+        "target": "#story",
+        "timestamp": "2025-08-22T06:41:34.963Z",
+        "ip": "127.0.0.1",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36"
+      },
+      "timestamp": "2025-08-22T06:41:35.276Z",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": 1755844897105,
+      "type": "navigation_clicked",
+      "data": {
+        "target": "#home",
+        "timestamp": "2025-08-22T06:41:37.092Z",
+        "ip": "127.0.0.1",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36"
+      },
+      "timestamp": "2025-08-22T06:41:37.105Z",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": 1755845353991,
+      "type": "server_error",
+      "data": {
+        "error": "Expected property name or '}' in JSON at position 1 (line 1 column 2)",
+        "stack": "SyntaxError: Expected property name or '}' in JSON at position 1 (line 1 column 2)\n    at JSON.parse (<anonymous>)\n    at parse (C:\\Users\\24mt1_fxpcxee\\Desktop\\warm-delights-website\\backend\\node_modules\\body-parser\\lib\\types\\json.js:92:19)\n    at C:\\Users\\24mt1_fxpcxee\\Desktop\\warm-delights-website\\backend\\node_modules\\body-parser\\lib\\read.js:128:18\n    at AsyncResource.runInAsyncScope (node:async_hooks:214:14)\n    at invokeCallback (C:\\Users\\24mt1_fxpcxee\\Desktop\\warm-delights-website\\backend\\node_modules\\raw-body\\index.js:238:16)\n    at done (C:\\Users\\24mt1_fxpcxee\\Desktop\\warm-delights-website\\backend\\node_modules\\raw-body\\index.js:227:7)\n    at IncomingMessage.onEnd (C:\\Users\\24mt1_fxpcxee\\Desktop\\warm-delights-website\\backend\\node_modules\\raw-body\\index.js:287:7)\n    at IncomingMessage.emit (node:events:518:28)\n    at endReadableNT (node:internal/streams/readable:1698:12)\n    at process.processTicksAndRejections (node:internal/process/task_queues:90:21)",
+        "url": "/api/admin/login",
+        "method": "POST",
+        "ip": "127.0.0.1"
+      },
+      "timestamp": "2025-08-22T06:49:13.991Z",
+      "ip": "127.0.0.1"
+    }
+  ],
+  "orders": [],
+  "orderIdCounter": 1,
+  "lastUpdated": "2025-08-27T07:02:04.026Z"
+}

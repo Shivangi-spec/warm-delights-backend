@@ -8,6 +8,9 @@ const fs = require('fs');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const rateLimit = require('express-rate-limit');
+const helmet = require('helmet');
+const compression = require('compression');
+const morgan = require('morgan');
 
 // Load environment variables safely
 try {
@@ -43,11 +46,11 @@ class GlobalImageStorage {
     init() {
         // Ensure uploads directory exists
         this.ensureUploadsDir();
-        
+
         // Load persistent data
         this.loadGalleryData();
         this.loadSessionData();
-        
+
         console.log(`✅ Global Storage initialized with ${this.images.length} images`);
         console.log(`📊 Loaded ${this.analyticsEvents.length} analytics events`);
         console.log(`🛒 Loaded ${this.orders.length} orders`);
@@ -142,13 +145,12 @@ class GlobalImageStorage {
             alt: `Warm Delights - ${imageData.originalName}`,
             tags: []
         };
-
         this.images.push(image);
         this.saveGalleryData();
-        
+
         // Update session cache
         this.updateSessionCache('gallery', this.getPublicImages());
-        
+
         console.log(`✅ Image added to global storage: ${image.filename}`);
         return image;
     }
@@ -159,10 +161,10 @@ class GlobalImageStorage {
 
         const [removedImage] = this.images.splice(imageIndex, 1);
         this.saveGalleryData();
-        
+
         // Update session cache
         this.updateSessionCache('gallery', this.getPublicImages());
-        
+
         console.log(`✅ Image removed from global storage: ${removedImage.filename}`);
         return removedImage;
     }
@@ -194,23 +196,23 @@ class GlobalImageStorage {
         };
 
         this.analyticsEvents.push(event);
-        
+
         // Keep only last 10000 events in memory
         if (this.analyticsEvents.length > 10000) {
             this.analyticsEvents = this.analyticsEvents.slice(-10000);
         }
-        
+
         this.saveGalleryData();
         return event;
     }
 
     getAnalyticsStats() {
         const today = new Date().toDateString();
-        
+
         return {
             totalVisitors: this.analyticsEvents.filter(e => e.type === 'page_visit').length,
-            todayVisitors: this.analyticsEvents.filter(e => 
-                e.type === 'page_visit' && 
+            todayVisitors: this.analyticsEvents.filter(e =>
+                e.type === 'page_visit' &&
                 new Date(e.timestamp).toDateString() === today
             ).length,
             cartAdditions: this.analyticsEvents.filter(e => e.type === 'cart_add').length,
@@ -233,7 +235,7 @@ class GlobalImageStorage {
 
         this.orders.push(order);
         this.saveGalleryData();
-        
+
         return order;
     }
 
@@ -263,14 +265,14 @@ class GlobalImageStorage {
     clearExpiredSessions() {
         const now = Date.now();
         let cleared = 0;
-        
+
         for (const [key, value] of this.sessionCache.entries()) {
             if (value.expires < now) {
                 this.sessionCache.delete(key);
                 cleared++;
             }
         }
-        
+
         if (cleared > 0) {
             console.log(`🗑️ Cleared ${cleared} expired session cache entries`);
             this.saveSessionData();
@@ -280,13 +282,13 @@ class GlobalImageStorage {
     // **👤 ADMIN SESSION MANAGEMENT**
     createAdminSession(username, loginData) {
         const sessionId = `session_${Date.now()}_${Math.random().toString(36)}`;
-        
+
         this.adminSessions.set(sessionId, {
             username: username,
             loginTime: new Date(),
             ...loginData
         });
-        
+
         return sessionId;
     }
 
@@ -324,6 +326,9 @@ app.options('*', cors());
 
 app.use(bodyParser.json({ limit: '10mb' }));
 app.use(bodyParser.urlencoded({ extended: true, limit: '10mb' }));
+app.use(helmet()); // Security headers
+app.use(compression()); // Gzip compression
+app.use(morgan('combined')); // Request logging
 
 // **🖼️ ENHANCED STATIC FILE SERVING**
 app.use('/uploads', express.static(globalStorage.uploadDir, {
@@ -340,11 +345,11 @@ app.use('/uploads', express.static(globalStorage.uploadDir, {
             '.gif': 'image/gif',
             '.webp': 'image/webp'
         };
-        
+
         if (mimeTypes[ext]) {
             res.setHeader('Content-Type', mimeTypes[ext]);
         }
-        
+
         // CRITICAL: Enable cross-origin access for images
         res.setHeader('Access-Control-Allow-Origin', '*');
         res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
@@ -388,7 +393,7 @@ const fileFilter = (req, file, cb) => {
     const allowedMimeTypes = [
         'image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif'
     ];
-    
+
     if (allowedMimeTypes.includes(file.mimetype.toLowerCase())) {
         cb(null, true);
     } else {
@@ -398,9 +403,9 @@ const fileFilter = (req, file, cb) => {
 
 const upload = multer({
     storage: storage,
-    limits: { 
+    limits: {
         fileSize: 10 * 1024 * 1024, // 10MB limit
-        files: 1 
+        files: 1
     },
     fileFilter: fileFilter
 });
@@ -409,7 +414,7 @@ const upload = multer({
 let transporter = null;
 try {
     if (process.env.EMAIL_USER && process.env.EMAIL_PASS) {
-        transporter = nodemailer.createTransporter({
+        transporter = nodemailer.createTransport({
             service: 'gmail',
             auth: {
                 user: process.env.EMAIL_USER,
@@ -426,9 +431,9 @@ function authMiddleware(req, res, next) {
     try {
         const authHeader = req.headers.authorization;
         if (!authHeader || !authHeader.startsWith('Bearer ')) {
-            return res.status(401).json({ 
-                error: 'Unauthorized', 
-                message: 'Missing or invalid authorization header' 
+            return res.status(401).json({
+                error: 'Unauthorized',
+                message: 'Missing or invalid authorization header'
             });
         }
 
@@ -436,26 +441,26 @@ function authMiddleware(req, res, next) {
         const decoded = jwt.verify(token, JWT_SECRET);
 
         if (!decoded.isAdmin) {
-            return res.status(403).json({ 
-                error: 'Forbidden', 
-                message: 'Admin access required' 
+            return res.status(403).json({
+                error: 'Forbidden',
+                message: 'Admin access required'
             });
         }
 
         // Check if session is still valid
         if (!globalStorage.validateAdminSession(decoded.sessionId)) {
-            return res.status(401).json({ 
-                error: 'Unauthorized', 
-                message: 'Session expired' 
+            return res.status(401).json({
+                error: 'Unauthorized',
+                message: 'Session expired'
             });
         }
 
         req.admin = decoded;
         next();
     } catch (error) {
-        return res.status(401).json({ 
-            error: 'Unauthorized', 
-            message: 'Invalid token' 
+        return res.status(401).json({
+            error: 'Unauthorized',
+            message: 'Invalid token'
         });
     }
 }
@@ -482,7 +487,7 @@ app.post('/api/admin/login', authLimiter, async (req, res) => {
                 ip: req.ip,
                 userAgent: req.get('User-Agent')
             });
-            
+
             return res.status(401).json({
                 success: false,
                 message: 'Invalid credentials'
@@ -529,16 +534,16 @@ app.post('/api/admin/login', authLimiter, async (req, res) => {
 // **📤 IMAGE UPLOAD TO GLOBAL STORAGE**
 app.post('/api/admin/gallery/upload', authMiddleware, (req, res) => {
     console.log('📸 Admin gallery upload to global storage');
-    
-    upload.single('image')(req, res, function(err) {
+
+    upload.single('image')(req, res, function (err) {
         if (err) {
             console.error('❌ Upload error:', err);
-            
+
             globalStorage.trackEvent('admin_upload_failed', {
                 sessionId: req.admin.sessionId,
                 error: err.message
             });
-            
+
             if (err instanceof multer.MulterError) {
                 if (err.code === 'LIMIT_FILE_SIZE') {
                     return res.status(400).json({
@@ -547,7 +552,7 @@ app.post('/api/admin/gallery/upload', authMiddleware, (req, res) => {
                     });
                 }
             }
-            
+
             return res.status(400).json({
                 error: 'Upload failed',
                 message: err.message
@@ -592,7 +597,7 @@ app.get('/api/gallery', (req, res) => {
     try {
         // Try to get from session cache first
         let images = globalStorage.getFromSessionCache('gallery');
-        
+
         if (!images) {
             // If not cached, get from storage and cache it
             images = globalStorage.getPublicImages();
@@ -627,7 +632,7 @@ app.get('/api/gallery', (req, res) => {
             source: 'global-storage',
             cached: images === globalStorage.getFromSessionCache('gallery')
         });
-        
+
     } catch (error) {
         console.error('❌ Gallery error:', error);
         res.status(500).json({ error: 'Failed to load gallery from global storage' });
@@ -639,10 +644,10 @@ app.get('/api/images', (req, res) => {
     try {
         const images = globalStorage.getPublicImages();
         const filenames = images.map(img => img.filename);
-        
+
         console.log(`📱 Images API served: ${filenames.length} filenames from global storage`);
         res.json(filenames);
-        
+
     } catch (error) {
         console.error('❌ Images error:', error);
         res.status(500).json({ error: 'Failed to load images from global storage' });
@@ -654,15 +659,15 @@ app.post('/api/images/:filename/view', (req, res) => {
     try {
         const filename = req.params.filename;
         const views = globalStorage.incrementImageViews(filename);
-        
+
         globalStorage.trackEvent('image_view', {
             filename: filename,
             ip: req.ip,
             views: views
         });
-        
+
         res.json({ success: true, views: views });
-        
+
     } catch (error) {
         console.error('❌ Image view tracking error:', error);
         res.status(500).json({ error: 'View tracking failed' });
@@ -676,7 +681,7 @@ app.delete('/api/admin/gallery/:id', authMiddleware, (req, res) => {
         const removedImage = globalStorage.removeImage(imageId);
 
         if (!removedImage) {
-            return res.status(404).json({ 
+            return res.status(404).json({
                 error: 'Image not found',
                 message: 'The requested image does not exist in global storage'
             });
@@ -710,10 +715,10 @@ app.delete('/api/admin/gallery/:id', authMiddleware, (req, res) => {
                 filename: removedImage.filename
             }
         });
-        
+
     } catch (error) {
         console.error('❌ Delete error:', error);
-        res.status(500).json({ 
+        res.status(500).json({
             error: 'Delete failed',
             message: 'Could not delete image from global storage'
         });
@@ -724,7 +729,7 @@ app.delete('/api/admin/gallery/:id', authMiddleware, (req, res) => {
 app.get('/api/admin/analytics', authMiddleware, (req, res) => {
     try {
         const stats = globalStorage.getAnalyticsStats();
-        
+
         // Track analytics view
         globalStorage.trackEvent('admin_analytics_viewed', {
             sessionId: req.admin.sessionId
@@ -749,7 +754,7 @@ app.get('/api/admin/analytics', authMiddleware, (req, res) => {
 app.post('/api/analytics/track', (req, res) => {
     try {
         const { eventType, data } = req.body;
-        
+
         if (!eventType) {
             return res.status(400).json({
                 success: false,
@@ -791,7 +796,7 @@ app.post('/api/orders', upload.single('referenceImage'), async (req, res) => {
         }
 
         const parsedItems = typeof items === 'string' ? JSON.parse(items) : items || [];
-        
+
         const orderData = {
             customerName,
             email,
@@ -931,7 +936,7 @@ app.post('/api/contact', async (req, res) => {
     }
 });
 
-// **📊 MENU API** (keep existing)
+// **📊 MENU API**
 app.get('/api/menu', (req, res) => {
     try {
         const menuItems = [
@@ -1088,7 +1093,7 @@ app.get('/api/placeholder/:width/:height', (req, res) => {
     try {
         const { width, height } = req.params;
         const text = req.query.text || '🧁 Warm Delights';
-        
+
         const svg = `
             <svg width="${width}" height="${height}" xmlns="http://www.w3.org/2000/svg">
                 <defs>
@@ -1106,7 +1111,7 @@ app.get('/api/placeholder/:width/:height', (req, res) => {
                 </text>
             </svg>
         `;
-        
+
         res.setHeader('Content-Type', 'image/svg+xml');
         res.setHeader('Cache-Control', 'public, max-age=3600');
         res.setHeader('Access-Control-Allow-Origin', '*');
@@ -1120,16 +1125,16 @@ app.get('/api/placeholder/:width/:height', (req, res) => {
 // **🏠 ROOT ROUTE WITH GLOBAL STORAGE INFO**
 app.get('/', (req, res) => {
     const stats = globalStorage.getAnalyticsStats();
-    
+
     res.json({
         status: 'OK',
         message: 'Warm Delights Global Storage Server',
         timestamp: new Date().toISOString(),
         version: '3.0.0',
         features: [
-            'Global Server Storage', 
-            'Session Cache', 
-            'Universal Image Access', 
+            'Global Server Storage',
+            'Session Cache',
+            'Universal Image Access',
             'Persistent Analytics',
             'Order Management',
             'Admin Authentication'
@@ -1152,7 +1157,7 @@ app.get('/', (req, res) => {
 
 // **💚 HEALTH CHECK**
 app.get('/health', (req, res) => {
-    res.json({ 
+    res.json({
         status: 'healthy',
         timestamp: new Date().toISOString(),
         uptime: process.uptime(),
@@ -1168,7 +1173,7 @@ app.get('/health', (req, res) => {
 // **🚨 GLOBAL ERROR HANDLER**
 app.use((error, req, res, next) => {
     console.error('🚨 Global error:', error);
-    
+
     // Track error
     globalStorage.trackEvent('server_error', {
         error: error.message,
@@ -1177,14 +1182,14 @@ app.use((error, req, res, next) => {
         method: req.method,
         ip: req.ip
     });
-    
+
     if (error instanceof multer.MulterError) {
         return res.status(400).json({
             error: 'File upload error',
             message: error.message
         });
     }
-    
+
     res.status(500).json({
         error: 'Internal server error',
         message: 'Something went wrong'
@@ -1198,8 +1203,8 @@ app.use('*', (req, res) => {
         method: req.method,
         ip: req.ip
     });
-    
-    res.status(404).json({ 
+
+    res.status(404).json({
         error: 'Route not found',
         message: `The route ${req.originalUrl} does not exist`
     });
@@ -1209,25 +1214,25 @@ app.use('*', (req, res) => {
 setInterval(() => {
     // Clean expired sessions
     globalStorage.clearExpiredSessions();
-    
+
     // Clean expired admin sessions
     const now = new Date();
     let expiredAdminSessions = [];
-    
+
     globalStorage.adminSessions.forEach((session, sessionId) => {
         const timeDiff = now - new Date(session.loginTime);
         const hoursDiff = timeDiff / (1000 * 60 * 60);
-        
+
         if (hoursDiff > 2) { // 2 hour expiry
             expiredAdminSessions.push(sessionId);
         }
     });
-    
+
     expiredAdminSessions.forEach(sessionId => {
         globalStorage.adminSessions.delete(sessionId);
         console.log(`🗑️ Cleaned up expired admin session: ${sessionId}`);
     });
-    
+
 }, 30 * 60 * 1000); // Every 30 minutes
 
 // **🚀 START SERVER WITH GLOBAL STORAGE**
@@ -1247,11 +1252,11 @@ const server = app.listen(PORT, '0.0.0.0', () => {
 // **🛑 GRACEFUL SHUTDOWN**
 process.on('SIGTERM', () => {
     console.log('Received SIGTERM, shutting down gracefully');
-    
+
     // Save all data before shutdown
     globalStorage.saveGalleryData();
     globalStorage.saveSessionData();
-    
+
     server.close(() => {
         console.log('Process terminated gracefully');
     });
@@ -1259,11 +1264,11 @@ process.on('SIGTERM', () => {
 
 process.on('SIGINT', () => {
     console.log('Received SIGINT, shutting down gracefully');
-    
+
     // Save all data before shutdown
     globalStorage.saveGalleryData();
     globalStorage.saveSessionData();
-    
+
     server.close(() => {
         console.log('Process terminated gracefully');
     });
