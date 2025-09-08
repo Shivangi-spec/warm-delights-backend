@@ -131,6 +131,7 @@ class GlobalImageStorage {
 
     // **🖼️ IMAGE MANAGEMENT**
     addImage(imageData) {
+        const baseUrl = process.env.BASE_URL || 'https://warm-delights-backend-production.up.railway.app';
         const image = {
             id: Date.now(),
             filename: imageData.filename,
@@ -141,16 +142,14 @@ class GlobalImageStorage {
             uploadedAt: new Date().toISOString(),
             views: 0,
             isPublic: true,
-            url: `/uploads/${imageData.filename}`,
+            url: `${baseUrl}/uploads/${imageData.filename}`,  // Full URL here
             alt: `Warm Delights - ${imageData.originalName}`,
             tags: []
         };
         this.images.push(image);
         this.saveGalleryData();
-
         // Update session cache
         this.updateSessionCache('gallery', this.getPublicImages());
-
         console.log(`✅ Image added to global storage: ${image.filename}`);
         return image;
     }
@@ -332,11 +331,10 @@ app.use(morgan('combined')); // Request logging
 
 // **🖼️ ENHANCED STATIC FILE SERVING**
 app.use('/uploads', express.static(globalStorage.uploadDir, {
-    maxAge: '1y', // Cache for 1 year
+    maxAge: '1y',
     etag: true,
     lastModified: true,
     setHeaders: (res, filePath) => {
-        // Set proper content type for images
         const ext = path.extname(filePath).toLowerCase();
         const mimeTypes = {
             '.jpg': 'image/jpeg',
@@ -345,16 +343,13 @@ app.use('/uploads', express.static(globalStorage.uploadDir, {
             '.gif': 'image/gif',
             '.webp': 'image/webp'
         };
-
         if (mimeTypes[ext]) {
             res.setHeader('Content-Type', mimeTypes[ext]);
         }
-
-        // CRITICAL: Enable cross-origin access for images
         res.setHeader('Access-Control-Allow-Origin', '*');
         res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
         res.setHeader('Cross-Origin-Embedder-Policy', 'unsafe-none');
-        res.setHeader('Cache-Control', 'public, max-age=31536000'); // 1 year cache
+        res.setHeader('Cache-Control', 'public, max-age=31536000');
     }
 }));
 

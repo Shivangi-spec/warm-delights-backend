@@ -1266,9 +1266,57 @@
       },
       "timestamp": "2025-08-22T06:49:13.991Z",
       "ip": "127.0.0.1"
+    },
+    {
+      "id": 1756278463940,
+      "type": "navigation_clicked",
+      "data": {
+        "target": "#story",
+        "timestamp": "2025-08-27T07:07:43.612Z",
+        "ip": "127.0.0.1",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36"
+      },
+      "timestamp": "2025-08-27T07:07:43.940Z",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": 1756278465816,
+      "type": "navigation_clicked",
+      "data": {
+        "target": "#menu",
+        "timestamp": "2025-08-27T07:07:45.490Z",
+        "ip": "127.0.0.1",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36"
+      },
+      "timestamp": "2025-08-27T07:07:45.816Z",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": 1756278469300,
+      "type": "navigation_clicked",
+      "data": {
+        "target": "#menu",
+        "timestamp": "2025-08-27T07:07:48.968Z",
+        "ip": "127.0.0.1",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36"
+      },
+      "timestamp": "2025-08-27T07:07:49.300Z",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": 1756278472259,
+      "type": "navigation_clicked",
+      "data": {
+        "target": "#gallery",
+        "timestamp": "2025-08-27T07:07:51.920Z",
+        "ip": "127.0.0.1",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36"
+      },
+      "timestamp": "2025-08-27T07:07:52.259Z",
+      "ip": "127.0.0.1"
     }
   ],
   "orders": [],
   "orderIdCounter": 1,
-  "lastUpdated": "2025-08-27T07:02:04.026Z"
+  "lastUpdated": "2025-08-27T07:07:52.259Z"
 }
